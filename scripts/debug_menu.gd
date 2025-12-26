@@ -64,7 +64,8 @@ func _ready() -> void:
 	_player_reset_button.pressed.connect(_on_player_reset_pressed)
 	_arena_save_button.pressed.connect(_on_arena_save_pressed)
 	_arena_reset_button.pressed.connect(_on_arena_reset_pressed)
-	_refresh_all()
+	# Defer the initial refresh to ensure scene is fully ready
+	call_deferred("_refresh_all")
 	_update_cursor_state()
 
 
@@ -129,15 +130,135 @@ func _refresh_arena() -> void:
 
 
 func _find_bosses() -> Array:
-	return get_tree().get_nodes_in_group(enemy_group)
+	# Try multiple approaches to find boss nodes
+	
+	# Approach 1: Look in scene tree groups
+	var bosses = get_tree().get_nodes_in_group(enemy_group)
+	if not bosses.is_empty():
+		return bosses
+	
+	# Approach 2: Look for nodes named "DVDBoss"
+	var found = []
+	_find_nodes_by_name(get_tree().get_root(), "DVDBoss", found)
+	
+	# Filter to only include nodes with the enemy group
+	var valid_bosses = []
+	for node in found:
+		if node.is_in_group(enemy_group):
+			valid_bosses.append(node)
+	
+	# If we found nodes but none are in the group, return them anyway
+	# (the group might not be set up correctly)
+	if not found.is_empty() and valid_bosses.is_empty():
+		return found
+	
+	return valid_bosses
 
 
 func _find_players() -> Array:
-	return get_tree().get_nodes_in_group(player_group)
+	# Try multiple approaches to find player nodes
+	
+	# Approach 1: Look in scene tree groups
+	var players = get_tree().get_nodes_in_group(player_group)
+	if not players.is_empty():
+		return players
+	
+	# Approach 2: Look for nodes named "Player"
+	var found = []
+	_find_nodes_by_name(get_tree().get_root(), "Player", found)
+	
+	# Filter to only include nodes with the player group
+	var valid_players = []
+	for node in found:
+		if node.is_in_group(player_group):
+			valid_players.append(node)
+	
+	# If we found nodes but none are in the group, return them anyway
+	# (the group might not be set up correctly)
+	if not found.is_empty() and valid_players.is_empty():
+		return found
+	
+	return valid_players
 
 
 func _find_arenas() -> Array:
-	return get_tree().get_nodes_in_group(arena_group)
+	# Try multiple approaches to find arena nodes
+	
+	# Approach 1: Look in scene tree groups
+	var arenas = get_tree().get_nodes_in_group(arena_group)
+	if not arenas.is_empty():
+		return arenas
+	
+	# Approach 2: Look for nodes with bounds property (Rect2 type)
+	# This finds any node that looks like it could be an arena
+	var nodes_with_bounds = []
+	_find_nodes_with_rect2_property(get_tree().get_root(), nodes_with_bounds)
+	
+	# Filter to only include nodes in the arena group OR named "Bounds"
+	var valid_arenas = []
+	for node in nodes_with_bounds:
+		if node.is_in_group(arena_group) or node.name == "Bounds":
+			valid_arenas.append(node)
+	
+	if not valid_arenas.is_empty():
+		return valid_arenas
+	
+	# Approach 3: Look for nodes named "Bounds" specifically
+	var bounds_nodes = []
+	_find_nodes_by_name(get_tree().get_root(), "Bounds", bounds_nodes)
+	
+	# Check if any of these have the arena group
+	for node in bounds_nodes:
+		if node.is_in_group(arena_group):
+			return [node]
+	
+	# If we found Bounds nodes but they're not in the group,
+	# they might still be the arena (group might not be set up right)
+	if not bounds_nodes.is_empty():
+		return bounds_nodes
+	
+	# Approach 4: Look at parent hierarchy
+	var parent = get_parent()
+	while parent != null:
+		if parent.name == "MainGame":
+			# Found the main game node, look for Bounds child
+			var bounds = parent.get_node_or_null("Bounds")
+			if bounds != null:
+				return [bounds]
+			break
+		parent = parent.get_parent()
+	
+	return []
+
+
+func _find_nodes_with_rect2_property(root: Node, results: Array) -> void:
+	if root == null:
+		return
+	
+	# Check if this node has any Rect2 properties
+	var props = root.get_property_list()
+	for prop in props:
+		if prop.get("type", TYPE_NIL) == TYPE_RECT2:
+			# Check if it's a script variable (not built-in)
+			var usage = prop.get("usage", 0)
+			if (usage & PROPERTY_USAGE_SCRIPT_VARIABLE) != 0:
+				results.append(root)
+				break
+	
+	# Recursively check children
+	for child in root.get_children():
+		_find_nodes_with_rect2_property(child, results)
+
+
+func _find_nodes_by_name(root: Node, name_part: String, results: Array) -> void:
+	if root == null:
+		return
+	if root.name.contains(name_part) or root.name == name_part:
+		results.append(root)
+	for child in root.get_children():
+		_find_nodes_by_name(child, name_part, results)
+
+
 
 
 func _clear_boss_controls() -> void:
@@ -201,15 +322,21 @@ func _is_tweakable_property(prop: Dictionary) -> bool:
 	if (usage & PROPERTY_USAGE_SCRIPT_VARIABLE) == 0:
 		return false
 	var type: int = prop.get("type", TYPE_NIL)
-	return type == TYPE_INT or type == TYPE_FLOAT
+	return type == TYPE_INT or type == TYPE_FLOAT or type == TYPE_RECT2
 
 
 func _create_boss_property_control(prop: Dictionary) -> void:
 	var prop_name: String = prop.get("name", "")
 	if prop_name == "":
 		return
+	var type: int = prop.get("type", TYPE_NIL)
+	
+	if type == TYPE_RECT2:
+		_create_rect2_property_control(prop, "boss")
+		return
+	
 	var value: float = float(_boss.get(prop_name))
-	var is_int: bool = prop.get("type", TYPE_FLOAT) == TYPE_INT
+	var is_int: bool = type == TYPE_INT
 	var row: HBoxContainer = HBoxContainer.new()
 	row.name = "Row_%s" % prop_name
 	var label: Label = Label.new()
@@ -239,8 +366,14 @@ func _create_player_property_control(prop: Dictionary) -> void:
 	var prop_name: String = prop.get("name", "")
 	if prop_name == "":
 		return
+	var type: int = prop.get("type", TYPE_NIL)
+	
+	if type == TYPE_RECT2:
+		_create_rect2_property_control(prop, "player")
+		return
+	
 	var value: float = float(_player.get(prop_name))
-	var is_int: bool = prop.get("type", TYPE_FLOAT) == TYPE_INT
+	var is_int: bool = type == TYPE_INT
 	var row: HBoxContainer = HBoxContainer.new()
 	row.name = "Row_%s" % prop_name
 	var label: Label = Label.new()
@@ -266,12 +399,122 @@ func _create_player_property_control(prop: Dictionary) -> void:
 	slider.value_changed.connect(_on_player_slider_changed.bind(prop_name))
 
 
+func _create_rect2_property_control(prop: Dictionary, target_type: String) -> void:
+	var prop_name: String = prop.get("name", "")
+	if prop_name == "":
+		return
+	
+	var rect_value: Rect2
+	if target_type == "arena":
+		if _arena == null:
+			return
+		rect_value = _arena.get(prop_name)
+	elif target_type == "boss":
+		if _boss == null:
+			return
+		rect_value = _boss.get(prop_name)
+	elif target_type == "player":
+		if _player == null:
+			return
+		rect_value = _player.get(prop_name)
+	else:
+		return
+	
+	# Handle null or invalid rect
+	if typeof(rect_value) != TYPE_RECT2:
+		return
+	
+	# Create a container for the Rect2 controls
+	var container: VBoxContainer = VBoxContainer.new()
+	container.name = "Row_%s" % prop_name
+	
+	# Create label for property name
+	var header_label: Label = Label.new()
+	header_label.text = prop_name
+	header_label.custom_minimum_size = Vector2(140, 0)
+	header_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	container.add_child(header_label)
+	
+	# Create controls for each component (x, y, width, height)
+	var components = [
+		{"name": "x", "value": rect_value.position.x},
+		{"name": "y", "value": rect_value.position.y},
+		{"name": "width", "value": rect_value.size.x},
+		{"name": "height", "value": rect_value.size.y}
+	]
+	
+	for comp in components:
+		var row: HBoxContainer = HBoxContainer.new()
+		row.name = "Row_%s_%s" % [prop_name, comp.name]
+		
+		var comp_label: Label = Label.new()
+		comp_label.text = "  %s" % comp.name
+		comp_label.custom_minimum_size = Vector2(130, 0)
+		row.add_child(comp_label)
+		
+		var slider: HSlider = HSlider.new()
+		slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		slider.min_value = 0.0
+		slider.max_value = max(1.0, abs(comp.value) * 3.0)
+		slider.step = 1.0
+		slider.value = comp.value
+		row.add_child(slider)
+		
+		var value_label: Label = Label.new()
+		value_label.custom_minimum_size = Vector2(72, 0)
+		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		value_label.text = _format_value(comp.value, true)
+		row.add_child(value_label)
+		
+		container.add_child(row)
+		
+		# Store control info
+		var control_key = "%s_%s" % [prop_name, comp.name]
+		if target_type == "arena":
+			_arena_property_controls[control_key] = {
+				"slider": slider,
+				"label": value_label,
+				"is_int": true,
+				"component": comp.name
+			}
+			slider.value_changed.connect(_on_arena_rect2_slider_changed.bind(prop_name, comp.name))
+		elif target_type == "boss":
+			_boss_property_controls[control_key] = {
+				"slider": slider,
+				"label": value_label,
+				"is_int": true,
+				"component": comp.name
+			}
+			slider.value_changed.connect(_on_boss_rect2_slider_changed.bind(prop_name, comp.name))
+		elif target_type == "player":
+			_player_property_controls[control_key] = {
+				"slider": slider,
+				"label": value_label,
+				"is_int": true,
+				"component": comp.name
+			}
+			slider.value_changed.connect(_on_player_rect2_slider_changed.bind(prop_name, comp.name))
+	
+	if target_type == "arena":
+		_arena_rows.add_child(container)
+	elif target_type == "boss":
+		_boss_rows.add_child(container)
+	elif target_type == "player":
+		_player_rows.add_child(container)
+
+
 func _create_arena_property_control(prop: Dictionary) -> void:
 	var prop_name: String = prop.get("name", "")
 	if prop_name == "":
 		return
+	var type: int = prop.get("type", TYPE_NIL)
+	
+	if type == TYPE_RECT2:
+		_create_rect2_property_control(prop, "arena")
+		return
+	
 	var value: float = float(_arena.get(prop_name))
-	var is_int: bool = prop.get("type", TYPE_FLOAT) == TYPE_INT
+	var is_int: bool = type == TYPE_INT
 	var row: HBoxContainer = HBoxContainer.new()
 	row.name = "Row_%s" % prop_name
 	var label: Label = Label.new()
@@ -424,6 +667,112 @@ func _on_arena_slider_changed(value: float, prop_name: String) -> void:
 	_refresh_arena_visuals()
 
 
+func _on_arena_rect2_slider_changed(value: float, prop_name: String, component: String) -> void:
+	if _suppress_sync or _arenas.is_empty():
+		return
+	
+	var control_key = "%s_%s" % [prop_name, component]
+	if not _arena_property_controls.has(control_key):
+		return
+	
+	var info: Dictionary = _arena_property_controls[control_key]
+	var label: Label = info.get("label") as Label
+	if label != null:
+		label.text = _format_value(value, true)
+	
+	# Update all arenas with the new Rect2 value
+	for arena in _arenas:
+		if not is_instance_valid(arena):
+			continue
+		
+		var current_rect: Rect2 = arena.get(prop_name)
+		var new_rect: Rect2 = current_rect
+		
+		match component:
+			"x":
+				new_rect.position.x = int(round(value))
+			"y":
+				new_rect.position.y = int(round(value))
+			"width":
+				new_rect.size.x = int(round(value))
+			"height":
+				new_rect.size.y = int(round(value))
+		
+		arena.set(prop_name, new_rect)
+	
+	_refresh_arena_visuals()
+
+
+func _on_boss_rect2_slider_changed(value: float, prop_name: String, component: String) -> void:
+	if _suppress_sync or _bosses.is_empty():
+		return
+	
+	var control_key = "%s_%s" % [prop_name, component]
+	if not _boss_property_controls.has(control_key):
+		return
+	
+	var info: Dictionary = _boss_property_controls[control_key]
+	var label: Label = info.get("label") as Label
+	if label != null:
+		label.text = _format_value(value, true)
+	
+	# Update all bosses with the new Rect2 value
+	for boss in _bosses:
+		if not is_instance_valid(boss):
+			continue
+		
+		var current_rect: Rect2 = boss.get(prop_name)
+		var new_rect: Rect2 = current_rect
+		
+		match component:
+			"x":
+				new_rect.position.x = int(round(value))
+			"y":
+				new_rect.position.y = int(round(value))
+			"width":
+				new_rect.size.x = int(round(value))
+			"height":
+				new_rect.size.y = int(round(value))
+		
+		boss.set(prop_name, new_rect)
+	
+	_refresh_boss_visuals()
+
+
+func _on_player_rect2_slider_changed(value: float, prop_name: String, component: String) -> void:
+	if _suppress_sync or _players.is_empty():
+		return
+	
+	var control_key = "%s_%s" % [prop_name, component]
+	if not _player_property_controls.has(control_key):
+		return
+	
+	var info: Dictionary = _player_property_controls[control_key]
+	var label: Label = info.get("label") as Label
+	if label != null:
+		label.text = _format_value(value, true)
+	
+	# Update all players with the new Rect2 value
+	for player in _players:
+		if not is_instance_valid(player):
+			continue
+		
+		var current_rect: Rect2 = player.get(prop_name)
+		var new_rect: Rect2 = current_rect
+		
+		match component:
+			"x":
+				new_rect.position.x = int(round(value))
+			"y":
+				new_rect.position.y = int(round(value))
+			"width":
+				new_rect.size.x = int(round(value))
+			"height":
+				new_rect.size.y = int(round(value))
+		
+		player.set(prop_name, new_rect)
+
+
 func _update_boss_current_health_control() -> void:
 	var info: Dictionary = _boss_property_controls.get("current_health", {})
 	var slider: HSlider = info.get("slider") as HSlider
@@ -482,6 +831,22 @@ func _refresh_arena_visuals() -> void:
 			continue
 		if arena.has_method("queue_redraw"):
 			arena.call("queue_redraw")
+	
+	# Update player bounds since it caches the arena bounds
+	# (DVD Boss already fetches fresh bounds each frame via _get_world_bounds())
+	if not _players.is_empty():
+		for player in _players:
+			if not is_instance_valid(player):
+				continue
+			# Check if player has bounds_node and bounds property
+			if player.has_method("get") and player.has_method("set"):
+				var bounds_node_path = player.get("bounds_node")
+				if bounds_node_path != null and bounds_node_path != NodePath():
+					var bounds_node = get_node_or_null(bounds_node_path)
+					if bounds_node != null and bounds_node.has_method("get_bounds"):
+						var arena_bounds = bounds_node.get_bounds()
+						if player.has_property("bounds"):
+							player.bounds = arena_bounds
 
 
 func _format_value(value: float, is_int: bool) -> String:
@@ -502,7 +867,18 @@ func _pause_gameplay() -> void:
 			node.process_mode = Node.PROCESS_MODE_DISABLED
 		elif node is Node:
 			# Check if it's a gameplay-related node
-			if node.name in ["Player", "DVDBoss", "Projectiles", "BossHealthBar", "PlayerHealthBar", "Bounds", "Camera2D"]:
+			if (
+				node.name
+				in [
+					"Player",
+					"DVDBoss",
+					"Projectiles",
+					"BossHealthBar",
+					"PlayerHealthBar",
+					"Bounds",
+					"Camera2D"
+				]
+			):
 				node.process_mode = Node.PROCESS_MODE_DISABLED
 			# Keep pause menu controller active
 			elif node.name == "PauseMenuController":
@@ -511,10 +887,12 @@ func _pause_gameplay() -> void:
 			elif node.name == "GameOverWindow":
 				node.process_mode = Node.PROCESS_MODE_PAUSABLE
 
+
 func _resume_gameplay() -> void:
 	# Resume all nodes
 	for node in get_tree().get_root().get_children():
 		node.process_mode = Node.PROCESS_MODE_INHERIT
+
 
 func _update_cursor_state() -> void:
 	_set_crosshair_enabled(not visible)
@@ -610,9 +988,20 @@ func _apply_boss_saved_config() -> void:
 				continue
 			if boss.get(key) == null:
 				continue
-			boss.set(key, data[key])
-			if key == "speed":
-				_update_boss_speed(boss, float(data[key]))
+			var value = data[key]
+			# Handle Rect2 stored as dictionary
+			if value is Dictionary and value.has("x") and value.has("y") and value.has("width") and value.has("height"):
+				var rect_value = Rect2(
+					float(value["x"]),
+					float(value["y"]),
+					float(value["width"]),
+					float(value["height"])
+				)
+				boss.set(key, rect_value)
+			else:
+				boss.set(key, value)
+				if key == "speed":
+					_update_boss_speed(boss, float(data[key]))
 
 
 func _apply_player_saved_config() -> void:
@@ -627,7 +1016,18 @@ func _apply_player_saved_config() -> void:
 				continue
 			if player.get(key) == null:
 				continue
-			player.set(key, data[key])
+			var value = data[key]
+			# Handle Rect2 stored as dictionary
+			if value is Dictionary and value.has("x") and value.has("y") and value.has("width") and value.has("height"):
+				var rect_value = Rect2(
+					float(value["x"]),
+					float(value["y"]),
+					float(value["width"]),
+					float(value["height"])
+				)
+				player.set(key, rect_value)
+			else:
+				player.set(key, data[key])
 
 
 func _apply_arena_saved_config() -> void:
@@ -642,7 +1042,18 @@ func _apply_arena_saved_config() -> void:
 				continue
 			if arena.get(key) == null:
 				continue
-			arena.set(key, data[key])
+			var value = data[key]
+			# Handle Rect2 stored as dictionary
+			if value is Dictionary and value.has("x") and value.has("y") and value.has("width") and value.has("height"):
+				var rect_value = Rect2(
+					float(value["x"]),
+					float(value["y"]),
+					float(value["width"]),
+					float(value["height"])
+				)
+				arena.set(key, rect_value)
+			else:
+				arena.set(key, value)
 
 
 func _collect_boss_values(boss: Node) -> Dictionary:
@@ -653,7 +1064,18 @@ func _collect_boss_values(boss: Node) -> Dictionary:
 		var prop_name: String = prop.get("name", "")
 		if prop_name == "":
 			continue
-		values[prop_name] = boss.get(prop_name)
+		var type: int = prop.get("type", TYPE_NIL)
+		if type == TYPE_RECT2:
+			# Store Rect2 as a dictionary with components
+			var rect_value: Rect2 = boss.get(prop_name)
+			values[prop_name] = {
+				"x": rect_value.position.x,
+				"y": rect_value.position.y,
+				"width": rect_value.size.x,
+				"height": rect_value.size.y
+			}
+		else:
+			values[prop_name] = boss.get(prop_name)
 	return values
 
 
@@ -665,7 +1087,18 @@ func _collect_player_values(player: Node) -> Dictionary:
 		var prop_name: String = prop.get("name", "")
 		if prop_name == "":
 			continue
-		values[prop_name] = player.get(prop_name)
+		var type: int = prop.get("type", TYPE_NIL)
+		if type == TYPE_RECT2:
+			# Store Rect2 as a dictionary with components
+			var rect_value: Rect2 = player.get(prop_name)
+			values[prop_name] = {
+				"x": rect_value.position.x,
+				"y": rect_value.position.y,
+				"width": rect_value.size.x,
+				"height": rect_value.size.y
+			}
+		else:
+			values[prop_name] = player.get(prop_name)
 	return values
 
 
@@ -677,7 +1110,18 @@ func _collect_arena_values(arena: Node) -> Dictionary:
 		var prop_name: String = prop.get("name", "")
 		if prop_name == "":
 			continue
-		values[prop_name] = arena.get(prop_name)
+		var type: int = prop.get("type", TYPE_NIL)
+		if type == TYPE_RECT2:
+			# Store Rect2 as a dictionary with components
+			var rect_value: Rect2 = arena.get(prop_name)
+			values[prop_name] = {
+				"x": rect_value.position.x,
+				"y": rect_value.position.y,
+				"width": rect_value.size.x,
+				"height": rect_value.size.y
+			}
+		else:
+			values[prop_name] = arena.get(prop_name)
 	return values
 
 
