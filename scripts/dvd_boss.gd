@@ -152,6 +152,12 @@ func _update_health_bar() -> void:
 
 
 func _get_world_bounds() -> Rect2:
+	# First try to get bounds from arena manager
+	var arena_manager = get_tree().get_first_node_in_group("arena_manager")
+	if arena_manager != null and arena_manager.has_method("get_bounds"):
+		return arena_manager.get_bounds()
+
+	# Fall back to bounds_node
 	if bounds_node != NodePath():
 		var node := get_node_or_null(bounds_node)
 		if node != null and node.has_method("get_bounds"):

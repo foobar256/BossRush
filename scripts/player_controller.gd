@@ -16,7 +16,6 @@ signal died
 @export var knockback_distance: float = 32.0
 @export var knockback_speed: float = 520.0
 @export var knockback_duration: float = 0.12
-@export var bounds_node: NodePath
 @export var bounds: Rect2 = Rect2(0, 0, 1280, 720)
 
 var _fire_timer: float = 0.0
@@ -24,16 +23,30 @@ var _invincibility_timer: float = 0.0
 var _knockback_timer: float = 0.0
 var _knockback_velocity: Vector2 = Vector2.ZERO
 var _is_dead: bool = false
+var _arena_manager: Node2D = null
 @onready var _projectile_parent: Node = _find_projectile_parent()
 
 
 func _ready() -> void:
 	add_to_group("player")
 	current_health = clamp(current_health, 0.0, max_health)
-	if bounds_node != NodePath():
-		var node := get_node_or_null(bounds_node)
-		if node != null and node.has_method("get_bounds"):
-			bounds = node.get_bounds()
+
+	# Find arena manager
+	_arena_manager = get_tree().get_first_node_in_group("arena_manager")
+	if _arena_manager == null:
+		# Try to find it by name
+		var root = get_tree().current_scene
+		if root != null:
+			_arena_manager = root.get_node_or_null("ArenaManager")
+
+	# Get bounds from arena manager if available
+	if _arena_manager != null and _arena_manager.has_method("get_bounds"):
+		bounds = _arena_manager.get_bounds()
+		# Set spawn position from arena manager
+		if _arena_manager.has_method("get_player_spawn"):
+			var spawn_pos = _arena_manager.get_player_spawn()
+			global_position = spawn_pos
+
 	_sync_health_bar()
 	queue_redraw()
 
