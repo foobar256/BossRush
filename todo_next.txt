@@ -2,3 +2,4 @@ Next ideas
 - Add basic boss behavior (movement/attack patterns) so combat has pressure.
 - Add hit feedback (flash, shake, particles) for boss and projectile impacts.
 - Add player upgrades (fire rate, damage, spread) via pickups or progression.
+- Change icon
