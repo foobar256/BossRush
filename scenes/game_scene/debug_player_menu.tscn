@@ -1,0 +1,56 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/debug_player_menu.gd" id="1_3ptk2"]
+
+[node name="DebugPlayerMenuLayer" type="CanvasLayer"]
+layer = 20
+
+[node name="DebugPlayerMenu" type="Control" parent="."]
+visible = false
+position = Vector2(456, 16)
+size = Vector2(420, 280)
+script = ExtResource("1_3ptk2")
+
+[node name="Panel" type="PanelContainer" parent="DebugPlayerMenu"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+
+[node name="Margin" type="MarginContainer" parent="DebugPlayerMenu/Panel"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBox" type="VBoxContainer" parent="DebugPlayerMenu/Panel/Margin"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Title" type="Label" parent="DebugPlayerMenu/Panel/Margin/VBox"]
+text = "Player Debug"
+
+[node name="StatusLabel" type="Label" parent="DebugPlayerMenu/Panel/Margin/VBox"]
+text = "Player: none"
+
+[node name="Buttons" type="HBoxContainer" parent="DebugPlayerMenu/Panel/Margin/VBox"]
+
+[node name="SaveButton" type="Button" parent="DebugPlayerMenu/Panel/Margin/VBox/Buttons"]
+text = "Save"
+
+[node name="ResetButton" type="Button" parent="DebugPlayerMenu/Panel/Margin/VBox/Buttons"]
+text = "Reset"
+
+[node name="Scroll" type="ScrollContainer" parent="DebugPlayerMenu/Panel/Margin/VBox"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Rows" type="VBoxContainer" parent="DebugPlayerMenu/Panel/Margin/VBox/Scroll"]
+size_flags_horizontal = 3
+size_flags_vertical = 3

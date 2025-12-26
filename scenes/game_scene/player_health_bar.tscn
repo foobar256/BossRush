@@ -1,0 +1,17 @@
+[gd_scene load_steps=2 format=3 uid="uid://d1s6m1u4m9n2p"]
+
+[ext_resource type="Script" uid="uid://c2k3r8y4v2s9q" path="res://scripts/player_health_bar.gd" id="1_j5v7p"]
+
+[node name="PlayerHealthBar" type="CanvasLayer"]
+layer = 6
+
+[node name="Bar" type="Control" parent="."]
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 220.0
+offset_bottom = 44.0
+script = ExtResource("1_j5v7p")

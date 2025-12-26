@@ -1,0 +1,58 @@
+[gd_scene load_steps=14 format=3 uid="uid://d5i5u4jv4r7e1"]
+
+[ext_resource type="Script" uid="uid://d1k0x3v6t0m3b" path="res://scripts/player_controller.gd" id="1_2o8v6"]
+[ext_resource type="Script" uid="uid://c8j5x1m4b0p7l" path="res://scripts/camera_follow_mouse.gd" id="2_1u4g3"]
+[ext_resource type="Script" uid="uid://n6y1r0v4k2t3q" path="res://scripts/bounds_visual.gd" id="3_5q1pw"]
+[ext_resource type="Script" uid="uid://d3fhm7x6cys17" path="res://scripts/crosshair_cursor.gd" id="4_4w8mm"]
+[ext_resource type="Script" uid="uid://c6qg5re6tq7x2" path="res://scripts/projectile_container.gd" id="5_m6w2m"]
+[ext_resource type="PackedScene" uid="uid://qv7g0fx2bk8s3" path="res://scenes/game_scene/projectile.tscn" id="6_7j2m1"]
+[ext_resource type="PackedScene" path="res://scenes/game_scene/dvd_boss.tscn" id="7_2m3qe"]
+[ext_resource type="PackedScene" uid="uid://d6s8b0x5jd0xd" path="res://scenes/game_scene/boss_health_bar.tscn" id="8_5f88q"]
+[ext_resource type="PackedScene" uid="uid://d1s6m1u4m9n2p" path="res://scenes/game_scene/player_health_bar.tscn" id="9_f2kwd"]
+[ext_resource type="PackedScene" path="res://scenes/game_scene/debug_boss_menu.tscn" id="10_4v0a2"]
+[ext_resource type="PackedScene" path="res://scenes/game_scene/debug_player_menu.tscn" id="11_1x7gv"]
+[ext_resource type="PackedScene" uid="uid://wm2nmhcpk5qp" path="res://scenes/windows/pause_menu_layer.tscn" id="12_7j2m1"]
+[ext_resource type="Script" uid="uid://cyh0d64pfygbl" path="res://addons/maaacks_game_template/base/nodes/utilities/pause_menu_controller.gd" id="13_5g9p4"]
+
+[node name="MainGame" type="Node2D"]
+
+[node name="Bounds" type="Node2D" parent="."]
+script = ExtResource("3_5q1pw")
+bounds = Rect2(0, 0, 1280, 720)
+line_color = Color(0.9, 0.9, 0.9, 1)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+current = true
+script = ExtResource("2_1u4g3")
+bounds_node = NodePath("../Bounds")
+player_node = NodePath("../Player")
+
+[node name="Player" type="Node2D" parent="."]
+position = Vector2(640, 360)
+script = ExtResource("1_2o8v6")
+bounds_node = NodePath("../Bounds")
+projectile_scene = ExtResource("6_7j2m1")
+
+[node name="Projectiles" type="Node2D" parent="."]
+script = ExtResource("5_m6w2m")
+
+[node name="DVDBoss" parent="." instance=ExtResource("7_2m3qe")]
+
+[node name="BossHealthBar" parent="." instance=ExtResource("8_5f88q")]
+
+[node name="PlayerHealthBar" parent="." instance=ExtResource("9_f2kwd")]
+
+[node name="DebugBossMenuLayer" parent="." instance=ExtResource("10_4v0a2")]
+
+[node name="DebugPlayerMenuLayer" parent="." instance=ExtResource("11_1x7gv")]
+
+[node name="Crosshair" type="CanvasLayer" parent="."]
+layer = 10
+script = ExtResource("4_4w8mm")
+
+[node name="CrosshairSprite" type="Sprite2D" parent="Crosshair"]
+
+[node name="PauseMenuController" type="Node" parent="."]
+script = ExtResource("13_5g9p4")
+pause_menu_packed = ExtResource("12_7j2m1")

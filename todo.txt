@@ -1,0 +1,2 @@
+add https://godotshaders.com/shader/flexible-toon-shader/ https://godotshaders.com/shader/3d-pixel-art-outline-highlight-post-processing-shader/
+create a starting point 

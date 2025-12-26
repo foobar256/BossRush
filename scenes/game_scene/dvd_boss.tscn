@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3 uid="uid://bya0rph6dj1uf"]
+
+[ext_resource type="Script" path="res://scripts/dvd_boss.gd" id="1_j01x1"]
+
+[node name="DVDBoss" type="Node2D"]
+position = Vector2(980, 360)
+script = ExtResource("1_j01x1")
+bounds_node = NodePath("../Bounds")
+
+[node name="Box" type="ColorRect" parent="."]
+color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="Label" type="Label" parent="."]
+text = "DVD"
+
+[node name="HealthBarBack" type="ColorRect" parent="."]
+color = Color(0.1, 0.1, 0.1, 0.85)
+
+[node name="HealthBarFill" type="ColorRect" parent="."]
+color = Color(0.9, 0.2, 0.2, 1)

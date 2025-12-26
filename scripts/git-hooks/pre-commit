@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+set -e
+
+ROOT_DIR="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+USER_DIR="$ROOT_DIR/.godot_user"
+export XDG_DATA_HOME="$USER_DIR/data"
+export XDG_CONFIG_HOME="$USER_DIR/config"
+export XDG_STATE_HOME="$USER_DIR/state"
+mkdir -p "$XDG_DATA_HOME" "$XDG_CONFIG_HOME" "$XDG_STATE_HOME"
+
+cd "$ROOT_DIR"
+godot --headless --quit --log-file "$USER_DIR/godot.log"
+
+run_tool() {
+  tool="$1"
+  shift
+  if [ -x "$ROOT_DIR/.venv/bin/$tool" ]; then
+    "$ROOT_DIR/.venv/bin/$tool" "$@"
+  else
+    "$tool" "$@"
+  fi
+}
+
+export HOME="$USER_DIR"
+
+failed=0
+run_tool gdformat scripts/ scenes/ || failed=1
+run_tool gdlint scripts/ scenes/ || failed=1
+[ "$failed" -eq 0 ] || exit 1
