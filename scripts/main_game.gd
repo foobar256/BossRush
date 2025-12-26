@@ -10,11 +10,14 @@ func _ready() -> void:
 	if _game_over_window != null:
 		_game_over_window.restart_pressed.connect(_on_restart_pressed)
 		_game_over_window.main_menu_pressed.connect(_on_main_menu_pressed)
+		_game_over_window.visible = false
 
 
 func _on_player_died() -> void:
 	if _game_over_window != null:
 		_game_over_window.visible = true
+		# Process mode needs to be set to allow the window to work while paused
+		_game_over_window.process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = true
 
 

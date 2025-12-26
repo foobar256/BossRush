@@ -24,6 +24,40 @@ run_tool() {
 export HOME="$USER_DIR"
 
 failed=0
+
+# Run automated tests for game over window functionality
+echo "Running automated tests..."
+if [ -f "tests/run_tests.gd" ]; then
+  # Create a temporary test runner scene
+  cat > "tests/test_runner.tscn" << 'EOF'
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/run_tests.gd" id="1_test_runner"]
+
+[node name="TestRunner" type="Node"]
+script = ExtResource("1_test_runner")
+EOF
+  
+  # Run the tests in headless mode
+  if godot --headless --script "tests/run_tests.gd" 2>&1 | tee "$USER_DIR/test_output.log"; then
+    echo "✅ All automated tests passed!"
+  else
+    echo "❌ Automated tests failed!"
+    failed=1
+  fi
+  
+  # Clean up temporary files
+  rm -f "tests/test_runner.tscn"
+fi
+
+# Run formatting and linting
 run_tool gdformat scripts/ scenes/ || failed=1
 run_tool gdlint scripts/ scenes/ || failed=1
+
+# Check for any modified test files that need formatting
+if [ -d "tests" ]; then
+  run_tool gdformat tests/ || failed=1
+  run_tool gdlint tests/ || failed=1
+fi
+
 [ "$failed" -eq 0 ] || exit 1

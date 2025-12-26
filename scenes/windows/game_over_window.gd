@@ -9,8 +9,17 @@ signal main_menu_pressed
 
 
 func _ready() -> void:
-	_restart_button.pressed.connect(_on_restart_button_pressed)
-	_main_menu_button.pressed.connect(_on_main_menu_button_pressed)
+	# Set process mode to always allow input even when game is paused
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+	# Connect button signals
+	if _restart_button:
+		_restart_button.pressed.connect(_on_restart_button_pressed)
+	if _main_menu_button:
+		_main_menu_button.pressed.connect(_on_main_menu_button_pressed)
+
+	# Ensure window is centered and hidden initially
+	visible = false
 
 
 func _on_restart_button_pressed() -> void:
