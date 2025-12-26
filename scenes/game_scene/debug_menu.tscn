@@ -1,0 +1,121 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/debug_menu.gd" id="1_debug"]
+
+[node name="DebugMenuLayer" type="CanvasLayer"]
+layer = 20
+
+[node name="DebugMenu" type="Control" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_debug")
+
+[node name="Panel" type="PanelContainer" parent="DebugMenu"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Margin" type="MarginContainer" parent="DebugMenu/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="DebugMenu/Panel/Margin"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="DebugMenu/Panel/Margin/VBox"]
+layout_mode = 2
+text = "Debug Menu (Paused)"
+horizontal_alignment = 1
+
+[node name="TabContainer" type="TabContainer" parent="DebugMenu/Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Boss" type="VBoxContainer" parent="DebugMenu/Panel/Margin/VBox/TabContainer"]
+layout_mode = 2
+
+[node name="BossStatusLabel" type="Label" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Boss"]
+layout_mode = 2
+text = "Boss: none"
+
+[node name="BossButtons" type="HBoxContainer" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Boss"]
+layout_mode = 2
+
+[node name="BossSaveButton" type="Button" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Boss/BossButtons"]
+layout_mode = 2
+text = "Save"
+
+[node name="BossResetButton" type="Button" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Boss/BossButtons"]
+layout_mode = 2
+text = "Reset"
+
+[node name="BossScroll" type="ScrollContainer" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Boss"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BossRows" type="VBoxContainer" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Boss/BossScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Player" type="VBoxContainer" parent="DebugMenu/Panel/Margin/VBox/TabContainer"]
+layout_mode = 2
+
+[node name="PlayerStatusLabel" type="Label" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Player"]
+layout_mode = 2
+text = "Player: none"
+
+[node name="PlayerButtons" type="HBoxContainer" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Player"]
+layout_mode = 2
+
+[node name="PlayerSaveButton" type="Button" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Player/PlayerButtons"]
+layout_mode = 2
+text = "Save"
+
+[node name="PlayerResetButton" type="Button" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Player/PlayerButtons"]
+layout_mode = 2
+text = "Reset"
+
+[node name="PlayerScroll" type="ScrollContainer" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Player"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PlayerRows" type="VBoxContainer" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Player/PlayerScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Arena" type="VBoxContainer" parent="DebugMenu/Panel/Margin/VBox/TabContainer"]
+layout_mode = 2
+
+[node name="ArenaStatusLabel" type="Label" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Arena"]
+layout_mode = 2
+text = "Arena: none"
+
+[node name="ArenaButtons" type="HBoxContainer" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Arena"]
+layout_mode = 2
+
+[node name="ArenaSaveButton" type="Button" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Arena/ArenaButtons"]
+layout_mode = 2
+text = "Save"
+
+[node name="ArenaResetButton" type="Button" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Arena/ArenaButtons"]
+layout_mode = 2
+text = "Reset"
+
+[node name="ArenaScroll" type="ScrollContainer" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Arena"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ArenaRows" type="VBoxContainer" parent="DebugMenu/Panel/Margin/VBox/TabContainer/Arena/ArenaScroll"]
+layout_mode = 2
+size_flags_horizontal = 3

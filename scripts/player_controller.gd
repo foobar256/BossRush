@@ -1,5 +1,7 @@
 extends Node2D
 
+signal died
+
 @export var move_speed: float = 220.0
 @export var radius: float = 6.0
 @export var dot_color: Color = Color(1, 1, 1, 1)
@@ -21,6 +23,7 @@ var _fire_timer: float = 0.0
 var _invincibility_timer: float = 0.0
 var _knockback_timer: float = 0.0
 var _knockback_velocity: Vector2 = Vector2.ZERO
+var _is_dead: bool = false
 @onready var _projectile_parent: Node = _find_projectile_parent()
 
 
@@ -36,6 +39,8 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if _is_dead:
+		return
 	if _invincibility_timer > 0.0:
 		_invincibility_timer = max(_invincibility_timer - delta, 0.0)
 	if _knockback_timer > 0.0:
@@ -62,16 +67,23 @@ func _draw() -> void:
 
 
 func take_damage(amount: float) -> void:
-	if amount <= 0.0:
+	if amount <= 0.0 or _is_dead:
 		return
 	current_health = max(current_health - amount, 0.0)
 	_sync_health_bar()
+	if current_health <= 0.0:
+		_die()
 
 
 func _sync_health_bar() -> void:
 	var bar := get_tree().get_first_node_in_group("player_bar")
 	if bar != null and bar.has_method("set_health"):
 		bar.set_health(current_health, max_health)
+
+
+func _die() -> void:
+	_is_dead = true
+	died.emit()
 
 
 func _try_fire() -> void:
