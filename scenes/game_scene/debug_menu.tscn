@@ -4,6 +4,7 @@
 
 [node name="DebugMenuLayer" type="CanvasLayer"]
 layer = 20
+process_mode = 2
 
 [node name="DebugMenu" type="Control" parent="."]
 visible = false

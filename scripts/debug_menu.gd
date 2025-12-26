@@ -18,24 +18,46 @@ var _arena_property_controls: Dictionary = {}
 var _suppress_sync: bool = false
 
 @onready var _tab_container: TabContainer = get_node("Panel/Margin/VBox/TabContainer")
-@onready var _boss_status_label: Label = get_node("Panel/Margin/VBox/TabContainer/Boss/BossStatusLabel")
-@onready var _boss_save_button: Button = get_node("Panel/Margin/VBox/TabContainer/Boss/BossButtons/BossSaveButton")
-@onready var _boss_reset_button: Button = get_node("Panel/Margin/VBox/TabContainer/Boss/BossButtons/BossResetButton")
-@onready var _boss_rows: VBoxContainer = get_node("Panel/Margin/VBox/TabContainer/Boss/BossScroll/BossRows")
+@onready
+var _boss_status_label: Label = get_node("Panel/Margin/VBox/TabContainer/Boss/BossStatusLabel")
+@onready var _boss_save_button: Button = get_node(
+	"Panel/Margin/VBox/TabContainer/Boss/BossButtons/BossSaveButton"
+)
+@onready var _boss_reset_button: Button = get_node(
+	"Panel/Margin/VBox/TabContainer/Boss/BossButtons/BossResetButton"
+)
+@onready
+var _boss_rows: VBoxContainer = get_node("Panel/Margin/VBox/TabContainer/Boss/BossScroll/BossRows")
 
-@onready var _player_status_label: Label = get_node("Panel/Margin/VBox/TabContainer/Player/PlayerStatusLabel")
-@onready var _player_save_button: Button = get_node("Panel/Margin/VBox/TabContainer/Player/PlayerButtons/PlayerSaveButton")
-@onready var _player_reset_button: Button = get_node("Panel/Margin/VBox/TabContainer/Player/PlayerButtons/PlayerResetButton")
-@onready var _player_rows: VBoxContainer = get_node("Panel/Margin/VBox/TabContainer/Player/PlayerScroll/PlayerRows")
+@onready var _player_status_label: Label = get_node(
+	"Panel/Margin/VBox/TabContainer/Player/PlayerStatusLabel"
+)
+@onready var _player_save_button: Button = get_node(
+	"Panel/Margin/VBox/TabContainer/Player/PlayerButtons/PlayerSaveButton"
+)
+@onready var _player_reset_button: Button = get_node(
+	"Panel/Margin/VBox/TabContainer/Player/PlayerButtons/PlayerResetButton"
+)
+@onready var _player_rows: VBoxContainer = get_node(
+	"Panel/Margin/VBox/TabContainer/Player/PlayerScroll/PlayerRows"
+)
 
-@onready var _arena_status_label: Label = get_node("Panel/Margin/VBox/TabContainer/Arena/ArenaStatusLabel")
-@onready var _arena_save_button: Button = get_node("Panel/Margin/VBox/TabContainer/Arena/ArenaButtons/ArenaSaveButton")
-@onready var _arena_reset_button: Button = get_node("Panel/Margin/VBox/TabContainer/Arena/ArenaButtons/ArenaResetButton")
-@onready var _arena_rows: VBoxContainer = get_node("Panel/Margin/VBox/TabContainer/Arena/ArenaScroll/ArenaRows")
+@onready
+var _arena_status_label: Label = get_node("Panel/Margin/VBox/TabContainer/Arena/ArenaStatusLabel")
+@onready var _arena_save_button: Button = get_node(
+	"Panel/Margin/VBox/TabContainer/Arena/ArenaButtons/ArenaSaveButton"
+)
+@onready var _arena_reset_button: Button = get_node(
+	"Panel/Margin/VBox/TabContainer/Arena/ArenaButtons/ArenaResetButton"
+)
+@onready var _arena_rows: VBoxContainer = get_node(
+	"Panel/Margin/VBox/TabContainer/Arena/ArenaScroll/ArenaRows"
+)
 
 
 func _ready() -> void:
 	visible = false
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	_boss_save_button.pressed.connect(_on_boss_save_pressed)
 	_boss_reset_button.pressed.connect(_on_boss_reset_pressed)
 	_player_save_button.pressed.connect(_on_player_save_pressed)
@@ -51,9 +73,9 @@ func _process(_delta: float) -> void:
 		visible = not visible
 		if visible:
 			_refresh_all()
-			get_tree().paused = true
+			_pause_gameplay()
 		else:
-			get_tree().paused = false
+			_resume_gameplay()
 		_update_cursor_state()
 	if visible:
 		if _bosses.is_empty():
@@ -275,7 +297,9 @@ func _create_arena_property_control(prop: Dictionary) -> void:
 	slider.value_changed.connect(_on_arena_slider_changed.bind(prop_name))
 
 
-func _apply_slider_range(slider: HSlider, prop: Dictionary, value: float, target_type: String) -> void:
+func _apply_slider_range(
+	slider: HSlider, prop: Dictionary, value: float, target_type: String
+) -> void:
 	var prop_name: String = prop.get("name", "")
 	if prop_name == "current_health":
 		slider.min_value = 0.0
@@ -287,7 +311,7 @@ func _apply_slider_range(slider: HSlider, prop: Dictionary, value: float, target
 		slider.max_value = max(1.0, max_health)
 		slider.step = 1.0
 		return
-	
+
 	var hint: int = prop.get("hint", PROPERTY_HINT_NONE)
 	var hint_string: String = prop.get("hint_string", "")
 	if hint == PROPERTY_HINT_RANGE and hint_string != "":
@@ -300,7 +324,7 @@ func _apply_slider_range(slider: HSlider, prop: Dictionary, value: float, target
 			else:
 				slider.step = _default_step(prop)
 			return
-	
+
 	var magnitude: float = abs(value)
 	if value < 0.0:
 		slider.min_value = value * 2.0
@@ -464,6 +488,34 @@ func _format_value(value: float, is_int: bool) -> String:
 	return String.num(value, 0 if is_int else 2)
 
 
+func _pause_gameplay() -> void:
+	# Pause all gameplay nodes but keep UI nodes active
+	for node in get_tree().get_root().get_children():
+		if node is CanvasLayer:
+			# Skip the debug menu layer itself
+			if node.name == "DebugMenuLayer":
+				continue
+			# Set process mode for UI layers to PAUSABLE so they still work
+			node.process_mode = Node.PROCESS_MODE_PAUSABLE
+		elif node is Node2D:
+			# Pause gameplay nodes
+			node.process_mode = Node.PROCESS_MODE_DISABLED
+		elif node is Node:
+			# Check if it's a gameplay-related node
+			if node.name in ["Player", "DVDBoss", "Projectiles", "BossHealthBar", "PlayerHealthBar", "Bounds", "Camera2D"]:
+				node.process_mode = Node.PROCESS_MODE_DISABLED
+			# Keep pause menu controller active
+			elif node.name == "PauseMenuController":
+				node.process_mode = Node.PROCESS_MODE_PAUSABLE
+			# Keep game over window active
+			elif node.name == "GameOverWindow":
+				node.process_mode = Node.PROCESS_MODE_PAUSABLE
+
+func _resume_gameplay() -> void:
+	# Resume all nodes
+	for node in get_tree().get_root().get_children():
+		node.process_mode = Node.PROCESS_MODE_INHERIT
+
 func _update_cursor_state() -> void:
 	_set_crosshair_enabled(not visible)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if visible else Input.MOUSE_MODE_HIDDEN
@@ -516,7 +568,7 @@ func _on_boss_save_pressed() -> void:
 
 func _on_boss_reset_pressed() -> void:
 	_on_boss_save_pressed()
-	get_tree().paused = false
+	_resume_gameplay()
 	get_tree().reload_current_scene()
 
 
@@ -529,7 +581,7 @@ func _on_player_save_pressed() -> void:
 
 func _on_player_reset_pressed() -> void:
 	_on_player_save_pressed()
-	get_tree().paused = false
+	_resume_gameplay()
 	get_tree().reload_current_scene()
 
 
@@ -542,7 +594,7 @@ func _on_arena_save_pressed() -> void:
 
 func _on_arena_reset_pressed() -> void:
 	_on_arena_save_pressed()
-	get_tree().paused = false
+	_resume_gameplay()
 	get_tree().reload_current_scene()
 
 
