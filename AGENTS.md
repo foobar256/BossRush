@@ -30,9 +30,31 @@ Use GDScript conventions throughout:
 - Keep Godot settings changes in `project.godot` and prefer editor-driven changes to avoid config drift.
 
 ## Testing Guidelines
-There are no automated tests in this repo yet. If you add tests:
-- Document the framework in this file and add a simple `tests/` directory.
-- Use descriptive test names that mirror scene or script names.
+This project now has automated tests in the `tests/` directory. The test framework includes:
+
+- **Test Runner**: `tests/test_runner.tscn` - Scene for running tests in Godot
+- **Test Script**: `tests/run_tests.gd` - Main test runner script
+- **Test Suite**: `tests/test_game_over_window.gd` - Example test suite with 6 test categories
+- **Documentation**: `tests/README.md` - Complete testing documentation
+
+### Running Tests
+- **Headless mode**: `godot --headless tests/test_runner.tscn`
+- **Pre-commit hook**: Tests run automatically when committing (see `scripts/git-hooks/pre-commit`)
+
+### When to Write Tests
+**Always create automated tests when making changes if it's a good idea to do so.** This includes:
+- New features or functionality
+- Bug fixes (add regression tests)
+- UI components and window systems
+- Game state management
+- Signal connections and event handling
+- Integration points between systems
+
+### Writing Tests
+- Use descriptive test names that mirror scene or script names
+- Follow the pattern in `tests/test_game_over_window.gd` as a template
+- Document the framework in this file when adding new test categories
+- Ensure tests can run in headless mode for CI/CD
 
 ## Commit & Pull Request Guidelines
 Use clear, imperative commit messages (e.g., "Add player movement").
