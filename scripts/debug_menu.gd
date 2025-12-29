@@ -348,15 +348,12 @@ func _create_boss_property_control(prop: Dictionary) -> void:
 	_apply_slider_range(slider, prop, value, "boss")
 	slider.value = value
 	row.add_child(slider)
-	var value_label: Label = Label.new()
-	value_label.custom_minimum_size = Vector2(72, 0)
-	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	value_label.text = _format_value(value, is_int)
-	row.add_child(value_label)
+	var value_line_edit: LineEdit = _create_value_line_edit(value, is_int, slider)
+	row.add_child(value_line_edit)
 	_boss_rows.add_child(row)
 	_boss_property_controls[prop_name] = {
 		"slider": slider,
-		"label": value_label,
+		"label": value_line_edit,
 		"is_int": is_int,
 	}
 	slider.value_changed.connect(_on_boss_slider_changed.bind(prop_name))
@@ -385,15 +382,12 @@ func _create_player_property_control(prop: Dictionary) -> void:
 	_apply_slider_range(slider, prop, value, "player")
 	slider.value = value
 	row.add_child(slider)
-	var value_label: Label = Label.new()
-	value_label.custom_minimum_size = Vector2(72, 0)
-	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	value_label.text = _format_value(value, is_int)
-	row.add_child(value_label)
+	var value_line_edit: LineEdit = _create_value_line_edit(value, is_int, slider)
+	row.add_child(value_line_edit)
 	_player_rows.add_child(row)
 	_player_property_controls[prop_name] = {
 		"slider": slider,
-		"label": value_label,
+		"label": value_line_edit,
 		"is_int": is_int,
 	}
 	slider.value_changed.connect(_on_player_slider_changed.bind(prop_name))
@@ -467,11 +461,8 @@ func _create_rect2_property_control(prop: Dictionary, target_type: String) -> vo
 		slider.value = comp.value
 		row.add_child(slider)
 
-		var value_label: Label = Label.new()
-		value_label.custom_minimum_size = Vector2(72, 0)
-		value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		value_label.text = _format_value(comp.value, true)
-		row.add_child(value_label)
+		var value_line_edit: LineEdit = _create_value_line_edit(comp.value, true, slider)
+		row.add_child(value_line_edit)
 
 		container.add_child(row)
 
@@ -479,17 +470,17 @@ func _create_rect2_property_control(prop: Dictionary, target_type: String) -> vo
 		var control_key = "%s_%s" % [prop_name, comp.name]
 		if target_type == "arena":
 			_arena_property_controls[control_key] = {
-				"slider": slider, "label": value_label, "is_int": true, "component": comp.name
+				"slider": slider, "label": value_line_edit, "is_int": true, "component": comp.name
 			}
 			slider.value_changed.connect(_on_arena_rect2_slider_changed.bind(prop_name, comp.name))
 		elif target_type == "boss":
 			_boss_property_controls[control_key] = {
-				"slider": slider, "label": value_label, "is_int": true, "component": comp.name
+				"slider": slider, "label": value_line_edit, "is_int": true, "component": comp.name
 			}
 			slider.value_changed.connect(_on_boss_rect2_slider_changed.bind(prop_name, comp.name))
 		elif target_type == "player":
 			_player_property_controls[control_key] = {
-				"slider": slider, "label": value_label, "is_int": true, "component": comp.name
+				"slider": slider, "label": value_line_edit, "is_int": true, "component": comp.name
 			}
 			slider.value_changed.connect(_on_player_rect2_slider_changed.bind(prop_name, comp.name))
 
@@ -524,15 +515,12 @@ func _create_arena_property_control(prop: Dictionary) -> void:
 	_apply_slider_range(slider, prop, value, "arena")
 	slider.value = value
 	row.add_child(slider)
-	var value_label: Label = Label.new()
-	value_label.custom_minimum_size = Vector2(72, 0)
-	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	value_label.text = _format_value(value, is_int)
-	row.add_child(value_label)
+	var value_line_edit: LineEdit = _create_value_line_edit(value, is_int, slider)
+	row.add_child(value_line_edit)
 	_arena_rows.add_child(row)
 	_arena_property_controls[prop_name] = {
 		"slider": slider,
-		"label": value_label,
+		"label": value_line_edit,
 		"is_int": is_int,
 	}
 	slider.value_changed.connect(_on_arena_slider_changed.bind(prop_name))
@@ -587,7 +575,7 @@ func _on_boss_slider_changed(value: float, prop_name: String) -> void:
 		return
 	var info: Dictionary = _boss_property_controls[prop_name]
 	var is_int: bool = info.get("is_int", false)
-	var label: Label = info.get("label") as Label
+	var line_edit: LineEdit = info.get("label") as LineEdit
 	if is_int:
 		var new_value_int: int = int(round(value))
 		for boss in _bosses:
@@ -596,8 +584,8 @@ func _on_boss_slider_changed(value: float, prop_name: String) -> void:
 			boss.set(prop_name, new_value_int)
 			if prop_name == "speed":
 				_update_boss_speed(boss, float(new_value_int))
-		if label != null:
-			label.text = _format_value(float(new_value_int), true)
+		if line_edit != null and not line_edit.has_focus():
+			line_edit.text = _format_value(float(new_value_int), true)
 	else:
 		for boss in _bosses:
 			if not is_instance_valid(boss):
@@ -605,8 +593,8 @@ func _on_boss_slider_changed(value: float, prop_name: String) -> void:
 			boss.set(prop_name, value)
 			if prop_name == "speed":
 				_update_boss_speed(boss, value)
-		if label != null:
-			label.text = _format_value(value, false)
+		if line_edit != null and not line_edit.has_focus():
+			line_edit.text = _format_value(value, false)
 	if prop_name == "max_health" and _boss_property_controls.has("current_health"):
 		_update_boss_current_health_control()
 	_refresh_boss_visuals()
@@ -619,22 +607,22 @@ func _on_player_slider_changed(value: float, prop_name: String) -> void:
 		return
 	var info: Dictionary = _player_property_controls[prop_name]
 	var is_int: bool = info.get("is_int", false)
-	var label: Label = info.get("label") as Label
+	var line_edit: LineEdit = info.get("label") as LineEdit
 	if is_int:
 		var new_value_int: int = int(round(value))
 		for player in _players:
 			if not is_instance_valid(player):
 				continue
 			player.set(prop_name, new_value_int)
-		if label != null:
-			label.text = _format_value(float(new_value_int), true)
+		if line_edit != null and not line_edit.has_focus():
+			line_edit.text = _format_value(float(new_value_int), true)
 	else:
 		for player in _players:
 			if not is_instance_valid(player):
 				continue
 			player.set(prop_name, value)
-		if label != null:
-			label.text = _format_value(value, false)
+		if line_edit != null and not line_edit.has_focus():
+			line_edit.text = _format_value(value, false)
 	if prop_name == "max_health" and _player_property_controls.has("current_health"):
 		_update_player_current_health_control()
 
@@ -646,22 +634,22 @@ func _on_arena_slider_changed(value: float, prop_name: String) -> void:
 		return
 	var info: Dictionary = _arena_property_controls[prop_name]
 	var is_int: bool = info.get("is_int", false)
-	var label: Label = info.get("label") as Label
+	var line_edit: LineEdit = info.get("label") as LineEdit
 	if is_int:
 		var new_value_int: int = int(round(value))
 		for arena in _arenas:
 			if not is_instance_valid(arena):
 				continue
 			arena.set(prop_name, new_value_int)
-		if label != null:
-			label.text = _format_value(float(new_value_int), true)
+		if line_edit != null and not line_edit.has_focus():
+			line_edit.text = _format_value(float(new_value_int), true)
 	else:
 		for arena in _arenas:
 			if not is_instance_valid(arena):
 				continue
 			arena.set(prop_name, value)
-		if label != null:
-			label.text = _format_value(value, false)
+		if line_edit != null and not line_edit.has_focus():
+			line_edit.text = _format_value(value, false)
 	_refresh_arena_visuals()
 
 
@@ -674,9 +662,9 @@ func _on_arena_rect2_slider_changed(value: float, prop_name: String, component: 
 		return
 
 	var info: Dictionary = _arena_property_controls[control_key]
-	var label: Label = info.get("label") as Label
-	if label != null:
-		label.text = _format_value(value, true)
+	var line_edit: LineEdit = info.get("label") as LineEdit
+	if line_edit != null and not line_edit.has_focus():
+		line_edit.text = _format_value(value, true)
 
 	# Update all arenas with the new Rect2 value
 	for arena in _arenas:
@@ -711,9 +699,9 @@ func _on_boss_rect2_slider_changed(value: float, prop_name: String, component: S
 		return
 
 	var info: Dictionary = _boss_property_controls[control_key]
-	var label: Label = info.get("label") as Label
-	if label != null:
-		label.text = _format_value(value, true)
+	var line_edit: LineEdit = info.get("label") as LineEdit
+	if line_edit != null and not line_edit.has_focus():
+		line_edit.text = _format_value(value, true)
 
 	# Update all bosses with the new Rect2 value
 	for boss in _bosses:
@@ -747,9 +735,9 @@ func _on_player_rect2_slider_changed(value: float, prop_name: String, component:
 		return
 
 	var info: Dictionary = _player_property_controls[control_key]
-	var label: Label = info.get("label") as Label
-	if label != null:
-		label.text = _format_value(value, true)
+	var line_edit: LineEdit = info.get("label") as LineEdit
+	if line_edit != null and not line_edit.has_focus():
+		line_edit.text = _format_value(value, true)
 
 	# Update all players with the new Rect2 value
 	for player in _players:
@@ -775,7 +763,7 @@ func _on_player_rect2_slider_changed(value: float, prop_name: String, component:
 func _update_boss_current_health_control() -> void:
 	var info: Dictionary = _boss_property_controls.get("current_health", {})
 	var slider: HSlider = info.get("slider") as HSlider
-	var label: Label = info.get("label") as Label
+	var line_edit: LineEdit = info.get("label") as LineEdit
 	if slider == null or _bosses.is_empty():
 		return
 	var max_health := _get_max_boss_health()
@@ -786,14 +774,14 @@ func _update_boss_current_health_control() -> void:
 			continue
 		boss.current_health = clamp(clamped, 0.0, float(boss.max_health))
 	slider.value = clamped
-	if label != null:
-		label.text = _format_value(clamped, true)
+	if line_edit != null and not line_edit.has_focus():
+		line_edit.text = _format_value(clamped, true)
 
 
 func _update_player_current_health_control() -> void:
 	var info: Dictionary = _player_property_controls.get("current_health", {})
 	var slider: HSlider = info.get("slider") as HSlider
-	var label: Label = info.get("label") as Label
+	var line_edit: LineEdit = info.get("label") as LineEdit
 	if slider == null or _players.is_empty():
 		return
 	var max_health := _get_max_player_health()
@@ -804,8 +792,8 @@ func _update_player_current_health_control() -> void:
 			continue
 		player.current_health = clamp(clamped, 0.0, float(player.max_health))
 	slider.value = clamped
-	if label != null:
-		label.text = _format_value(clamped, true)
+	if line_edit != null and not line_edit.has_focus():
+		line_edit.text = _format_value(clamped, true)
 
 
 func _refresh_boss_visuals() -> void:
@@ -1244,3 +1232,48 @@ func _read_arena_config() -> Dictionary:
 		else:
 			result[key] = value
 	return result
+
+
+func _create_value_line_edit(value: float, is_int: bool, slider: HSlider) -> LineEdit:
+	var line_edit := LineEdit.new()
+	line_edit.custom_minimum_size = Vector2(72, 0)
+	line_edit.alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	line_edit.text = _format_value(value, is_int)
+	line_edit.select_all_on_focus = true
+
+	line_edit.text_submitted.connect(_on_value_edit_submitted.bind(slider, is_int, line_edit))
+	line_edit.focus_exited.connect(_on_value_focus_exited.bind(line_edit, slider, is_int))
+
+	return line_edit
+
+
+func _on_value_edit_submitted(
+	new_text: String, slider: HSlider, is_int: bool, line_edit: LineEdit
+) -> void:
+	_apply_text_value(new_text, slider, is_int, line_edit)
+	line_edit.release_focus()
+
+
+func _on_value_focus_exited(line_edit: LineEdit, slider: HSlider, is_int: bool) -> void:
+	_apply_text_value(line_edit.text, slider, is_int, line_edit)
+
+
+func _apply_text_value(text: String, slider: HSlider, is_int: bool, line_edit: LineEdit) -> void:
+	if not text.is_valid_float():
+		line_edit.text = _format_value(slider.value, is_int)
+		return
+
+	var new_val := float(text)
+	if is_int:
+		new_val = round(new_val)
+
+	if new_val < slider.min_value:
+		slider.min_value = new_val
+	if new_val > slider.max_value:
+		slider.max_value = new_val
+
+	if not is_equal_approx(slider.value, new_val):
+		slider.value = new_val
+	else:
+		# If value is same, format the text just in case (e.g. "5.00" -> "5")
+		line_edit.text = _format_value(slider.value, is_int)

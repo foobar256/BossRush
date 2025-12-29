@@ -4,6 +4,7 @@ var _game_over_window: Control
 
 @onready var _player: Node2D = $Player
 @onready var _arena_manager: Node2D = $ArenaManager
+@onready var _crosshair_cursor: CanvasLayer = $Crosshair
 
 
 func _ready() -> void:
@@ -70,14 +71,24 @@ func _on_player_died() -> void:
 		_game_over_window.visible = true
 		# Process mode needs to be set to allow the window to work while paused
 		_game_over_window.process_mode = Node.PROCESS_MODE_ALWAYS
+	_set_game_cursor_enabled(false)
 	get_tree().paused = true
 
 
 func _on_restart_pressed() -> void:
 	get_tree().paused = false
+	_set_game_cursor_enabled(true)
 	get_tree().reload_current_scene()
 
 
 func _on_main_menu_pressed() -> void:
 	get_tree().paused = false
+	_set_game_cursor_enabled(false)
 	get_tree().change_scene_to_file("res://scenes/menus/main_menu/main_menu.tscn")
+
+
+func _set_game_cursor_enabled(enabled: bool) -> void:
+	if _crosshair_cursor != null and _crosshair_cursor.has_method("set_enabled"):
+		_crosshair_cursor.set_enabled(enabled)
+	else:
+		Input.mouse_mode = Input.MOUSE_MODE_HIDDEN if enabled else Input.MOUSE_MODE_VISIBLE

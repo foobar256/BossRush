@@ -3,14 +3,24 @@ extends Node
 # This script can be run directly to execute all tests
 
 func _ready():
-	print("Game Over Window Test Runner")
+	print("Game Test Runner")
+	call_deferred("_run_all_tests")
+
+
+func _run_all_tests():
 	print("Running automated tests...")
 	
-	var test_script = preload("res://tests/test_game_over_window.gd").new()
-	var success = test_script.run_tests()
+	var test_scripts = [
+		preload("res://tests/test_game_over_window.gd").new(),
+		preload("res://tests/test_main_game_cursor.gd").new(),
+	]
+
+	var success = true
+	for test_script in test_scripts:
+		success = test_script.run_tests() and success
 	
 	if success:
-		print("\n🎉 All tests passed! The game over window fixes are working correctly.")
+		print("\n🎉 All tests passed! Game over and cursor behavior look good.")
 	else:
 		print("\n❌ Some tests failed. Please review the output above.")
 	
