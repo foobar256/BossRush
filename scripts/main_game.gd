@@ -1,9 +1,9 @@
 extends Node2D
 
+var _game_over_window: Control
+
 @onready var _player: Node2D = $Player
 @onready var _arena_manager: Node2D = $ArenaManager
-
-var _game_over_window: Control
 
 
 func _ready() -> void:
@@ -32,10 +32,12 @@ func _setup_arena_elements() -> void:
 	if _arena_manager == null:
 		return
 
-	# Set player position to arena spawn
+	# Set player position and bounds from arena
 	if _player != null:
 		var player_spawn = _arena_manager.get_player_spawn()
 		_player.global_position = player_spawn
+		# Update player bounds to match arena
+		_player.bounds = _arena_manager.get_bounds()
 
 	# Spawn boss
 	var boss_scene_path = _arena_manager.get_boss_scene()

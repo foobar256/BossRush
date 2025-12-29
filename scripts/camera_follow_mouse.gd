@@ -4,6 +4,7 @@ extends Camera2D
 @export var bounds: Rect2 = Rect2(0, 0, 1280, 720)
 @export var follow_speed: float = 6.0
 @export var max_offset: float = 120.0
+@export var use_mouse_offset: bool = false
 
 var _player: Node2D
 var _arena_manager: Node2D
@@ -31,11 +32,13 @@ func _process(delta: float) -> void:
 	if _player != null:
 		base_pos = _player.global_position
 
-	var target := get_global_mouse_position()
-	var offset := target - base_pos
-	if offset.length() > max_offset:
-		offset = offset.normalized() * max_offset
-	target = base_pos + offset
+	var target := base_pos
+	if use_mouse_offset:
+		var mouse_pos := get_global_mouse_position()
+		var offset := mouse_pos - base_pos
+		if offset.length() > max_offset:
+			offset = offset.normalized() * max_offset
+		target = base_pos + offset
 	var min_pos := bounds.position
 	var max_pos := bounds.position + bounds.size
 	target.x = clamp(target.x, min_pos.x, max_pos.x)

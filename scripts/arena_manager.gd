@@ -37,9 +37,14 @@ func create_arena(arena_name: String) -> bool:
 
 	# Get arena bounds
 	if config.has_section_key("arena", "bounds"):
-		_current_arena_data.bounds = config.get_value("arena", "bounds")
+		var loaded_bounds: Rect2 = config.get_value("arena", "bounds")
+		# Always center arena bounds around the world origin.
+		loaded_bounds.position = -loaded_bounds.size * 0.5
+		_current_arena_data.bounds = loaded_bounds
 	else:
-		_current_arena_data.bounds = Rect2(0, 0, 1280, 720)
+		var fallback_bounds := Rect2(0, 0, 1280, 720)
+		fallback_bounds.position = -fallback_bounds.size * 0.5
+		_current_arena_data.bounds = fallback_bounds  # Default fallback
 
 	# Get arena visuals
 	if config.has_section_key("arena", "line_color"):
@@ -92,7 +97,7 @@ func get_boss_spawns() -> Array[Vector2]:
 func get_bounds() -> Rect2:
 	if _current_arena_data.has("bounds"):
 		return _current_arena_data.bounds
-	return Rect2(0, 0, 1280, 720)
+	return Rect2(0, 0, 1280, 720)  # Default fallback
 
 
 ## Get the boss scene path if configured

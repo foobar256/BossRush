@@ -297,6 +297,8 @@ func _build_player_controls() -> void:
 	for prop in _player.get_property_list():
 		if not _is_tweakable_property(prop):
 			continue
+		if prop.get("name", "") == "bounds":
+			continue
 		_create_player_property_control(prop)
 	_suppress_sync = false
 
@@ -433,13 +435,20 @@ func _create_rect2_property_control(prop: Dictionary, target_type: String) -> vo
 	header_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	container.add_child(header_label)
 
-	# Create controls for each component (x, y, width, height)
-	var components = [
-		{"name": "x", "value": rect_value.position.x},
-		{"name": "y", "value": rect_value.position.y},
-		{"name": "width", "value": rect_value.size.x},
-		{"name": "height", "value": rect_value.size.y}
-	]
+	# Create controls for each component.
+	var components = []
+	if target_type == "arena" and prop_name == "bounds":
+		components = [
+			{"name": "width", "value": rect_value.size.x},
+			{"name": "height", "value": rect_value.size.y}
+		]
+	else:
+		components = [
+			{"name": "x", "value": rect_value.position.x},
+			{"name": "y", "value": rect_value.position.y},
+			{"name": "width", "value": rect_value.size.x},
+			{"name": "height", "value": rect_value.size.y}
+		]
 
 	for comp in components:
 		var row: HBoxContainer = HBoxContainer.new()
@@ -686,7 +695,8 @@ func _on_arena_rect2_slider_changed(value: float, prop_name: String, component: 
 				new_rect.size.x = int(round(value))
 			"height":
 				new_rect.size.y = int(round(value))
-
+		if prop_name == "bounds":
+			new_rect.position = -new_rect.size * 0.5
 		arena.set(prop_name, new_rect)
 
 	_refresh_arena_visuals()
@@ -1151,12 +1161,38 @@ func _write_player_config(values: Dictionary) -> void:
 
 
 func _write_arena_config(values: Dictionary) -> void:
+	# Save to the actual arena config file
+	var arena_config_path := "res://config/arenas/dvd_boss_arena.cfg"
 	var config := ConfigFile.new()
+
+	# Load existing config to preserve other sections
+	var load_err := config.load(arena_config_path)
+	if load_err != OK:
+		push_warning("Failed to load existing arena config, creating new one")
+
+	# Update arena section with bounds
+	if values.has("bounds"):
+		var bounds_data = values["bounds"]
+		if bounds_data is Dictionary:
+			var rect := Rect2(
+				float(bounds_data["x"]),
+				float(bounds_data["y"]),
+				float(bounds_data["width"]),
+				float(bounds_data["height"])
+			)
+			config.set_value("arena", "bounds", rect)
+
+	# Save other arena values
 	for key in values.keys():
+		if key == "bounds":
+			continue  # Already handled above
 		config.set_value("arena", key, values[key])
-	var err := config.save("user://arena_config.cfg")
+
+	var err := config.save(arena_config_path)
 	if err != OK:
-		push_warning("Failed to write arena config")
+		push_warning("Failed to write arena config to: " + arena_config_path)
+	else:
+		print("Arena config saved to: " + arena_config_path)
 
 
 func _read_boss_config() -> Dictionary:
@@ -1186,13 +1222,25 @@ func _read_player_config() -> Dictionary:
 
 
 func _read_arena_config() -> Dictionary:
+	# Read from the actual arena config file
+	var arena_config_path := "res://config/arenas/dvd_boss_arena.cfg"
 	var config := ConfigFile.new()
-	var err := config.load("user://arena_config.cfg")
+	var err := config.load(arena_config_path)
 	if err != OK:
 		return {}
 	if not config.has_section("arena"):
 		return {}
 	var result: Dictionary = {}
 	for key in config.get_section_keys("arena"):
-		result[key] = config.get_value("arena", key)
+		var value = config.get_value("arena", key)
+		# Convert Rect2 to dictionary format for consistency
+		if value is Rect2:
+			result[key] = {
+				"x": value.position.x,
+				"y": value.position.y,
+				"width": value.size.x,
+				"height": value.size.y
+			}
+		else:
+			result[key] = value
 	return result

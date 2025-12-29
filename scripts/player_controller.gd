@@ -16,7 +16,7 @@ signal died
 @export var knockback_distance: float = 32.0
 @export var knockback_speed: float = 520.0
 @export var knockback_duration: float = 0.12
-@export var bounds: Rect2 = Rect2(0, 0, 1280, 720)
+@export var bounds: Rect2 = Rect2(0, 0, 1280, 720)  # Default, will be set from arena config
 
 var _fire_timer: float = 0.0
 var _invincibility_timer: float = 0.0
@@ -40,12 +40,24 @@ func _ready() -> void:
 			_arena_manager = root.get_node_or_null("ArenaManager")
 
 	# Get bounds from arena manager if available
-	if _arena_manager != null and _arena_manager.has_method("get_bounds"):
-		bounds = _arena_manager.get_bounds()
+	if _arena_manager != null:
+		if _arena_manager.has_method("get_bounds"):
+			bounds = _arena_manager.get_bounds()
 		# Set spawn position from arena manager
 		if _arena_manager.has_method("get_player_spawn"):
 			var spawn_pos = _arena_manager.get_player_spawn()
 			global_position = spawn_pos
+
+		# Connect to arena_created signal to update bounds if they change
+		if _arena_manager.has_signal("arena_created"):
+			_arena_manager.arena_created.connect(_on_arena_created)
+
+
+func _on_arena_created(arena_data: Dictionary) -> void:
+	if arena_data.has("bounds"):
+		bounds = arena_data.bounds
+	if _arena_manager.has_method("get_player_spawn"):
+		global_position = _arena_manager.get_player_spawn()
 
 	_sync_health_bar()
 	queue_redraw()
