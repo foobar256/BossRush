@@ -23,6 +23,7 @@ var _invincibility_timer: float = 0.0
 var _knockback_timer: float = 0.0
 var _knockback_velocity: Vector2 = Vector2.ZERO
 var _is_dead: bool = false
+var _is_combat_active: bool = false
 var _arena_manager: Node2D = null
 @onready var _projectile_parent: Node = _find_projectile_parent()
 
@@ -61,6 +62,10 @@ func _on_arena_created(arena_data: Dictionary) -> void:
 
 	_sync_health_bar()
 	queue_redraw()
+
+
+func start_combat() -> void:
+	_is_combat_active = true
 
 
 func _process(delta: float) -> void:

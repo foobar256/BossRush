@@ -73,12 +73,16 @@ func _setup_arena_elements() -> void:
 
 	# Start countdown
 	if _countdown_ui != null:
-		get_tree().paused = true
 		_countdown_ui.start_countdown()
 
 
 func _on_countdown_finished() -> void:
-	get_tree().paused = false
+	if _player != null and _player.has_method("start_combat"):
+		_player.start_combat()
+
+	for boss in get_tree().get_nodes_in_group("boss"):
+		if boss.has_method("start_combat"):
+			boss.start_combat()
 
 
 func _on_player_died() -> void:

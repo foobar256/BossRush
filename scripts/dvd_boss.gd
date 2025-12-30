@@ -5,6 +5,8 @@ signal died
 
 @export var max_health: float = 200.0
 @export var current_health: float = 200.0
+@export var max_shield: float = 100.0
+@export var current_shield: float = 100.0
 @export var size: float = 120.0
 @export var speed: float = 320.0
 @export var bounds_node: NodePath
@@ -19,21 +21,25 @@ signal died
 @export var health_bar_height: float = 8.0
 @export var health_bar_back_color: Color = Color(0.1, 0.1, 0.1, 0.85)
 @export var health_bar_fill_color: Color = Color(0.9, 0.2, 0.2, 1.0)
+@export var shield_bar_fill_color: Color = Color(0.1, 0.5, 0.9, 1.0)
 @export var health_bar_offset: float = 6.0
 @export var health_bar_path: NodePath
 
 var _boss_bar: Node = null
 var _velocity: Vector2 = Vector2.ZERO
 var _has_split: bool = false
+var _is_combat_active: bool = false
 
 @onready var box: ColorRect = $Box
 @onready var label: Label = $Label
 @onready var health_bar_back: ColorRect = $HealthBarBack
 @onready var health_bar_fill: ColorRect = $HealthBarFill
+@onready var shield_bar_fill: ColorRect = $ShieldBarFill
 
 
 func _ready() -> void:
 	add_to_group("enemies")
+	add_to_group("boss")
 	current_health = clamp(current_health, 0.0, max_health)
 	_boss_bar = _find_boss_bar()
 	call_deferred("_sync_boss_bar")
@@ -43,10 +49,22 @@ func _ready() -> void:
 	_update_health_bar()
 
 
+func start_combat() -> void:
+	_is_combat_active = true
+
+
 func take_damage(amount: float) -> void:
 	if amount <= 0.0:
 		return
-	current_health = max(current_health - amount, 0.0)
+
+	if current_shield > 0.0:
+		var shield_damage = min(current_shield, amount)
+		current_shield -= shield_damage
+		amount -= shield_damage
+
+	if amount > 0.0:
+		current_health = max(current_health - amount, 0.0)
+
 	emit_signal("health_changed", current_health, max_health)
 	_sync_boss_bar()
 	_update_health_bar()
@@ -79,7 +97,12 @@ func _sync_boss_bar() -> void:
 		_boss_bar = _find_boss_bar()
 	if _boss_bar != null:
 		if _boss_bar.has_method("update_boss_health"):
-			_boss_bar.update_boss_health(self, current_health, max_health)
+			if _boss_bar.has_method("update_boss_stats"):
+				_boss_bar.update_boss_stats(
+					self, current_health, max_health, current_shield, max_shield
+				)
+			else:
+				_boss_bar.update_boss_health(self, current_health, max_health)
 		elif _boss_bar.has_method("register_boss"):
 			_boss_bar.register_boss(self)
 		elif _boss_bar.has_method("set_health"):
@@ -92,6 +115,8 @@ func _exit_tree() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if not _is_combat_active:
+		return
 	var bounds := _get_world_bounds()
 	if bounds.size == Vector2.ZERO:
 		return
@@ -140,15 +165,24 @@ func _apply_visuals() -> void:
 		health_bar_fill.color = health_bar_fill_color
 		health_bar_fill.position = Vector2(-size * 0.5, size * 0.5 + health_bar_offset)
 		health_bar_fill.size = Vector2(size, health_bar_height)
+	if shield_bar_fill != null:
+		shield_bar_fill.color = shield_bar_fill_color
+		shield_bar_fill.position = Vector2(-size * 0.5, size * 0.5 + health_bar_offset)
+		shield_bar_fill.size = Vector2(size, health_bar_height)
 
 
 func _update_health_bar() -> void:
-	if health_bar_fill == null:
-		return
-	var percent := 0.0
-	if max_health > 0.0:
-		percent = current_health / max_health
-	health_bar_fill.size = Vector2(size * percent, health_bar_height)
+	if health_bar_fill != null:
+		var health_percent := 0.0
+		if max_health > 0.0:
+			health_percent = current_health / max_health
+		health_bar_fill.size = Vector2(size * health_percent, health_bar_height)
+
+	if shield_bar_fill != null:
+		var shield_percent := 0.0
+		if max_shield > 0.0:
+			shield_percent = current_shield / max_shield
+		shield_bar_fill.size = Vector2(size * shield_percent, health_bar_height)
 
 
 func _get_world_bounds() -> Rect2:
@@ -191,6 +225,8 @@ func _split() -> void:
 		child.size = new_size
 		child.max_health = new_max_health
 		child.current_health = new_max_health
+		child.max_shield = max_shield * split_scale
+		child.current_shield = 0.0  # Shield usually doesn't split/regen here based on request
 		child.speed = speed
 		child.bounds_node = bounds_node
 		child.text = text
