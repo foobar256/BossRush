@@ -468,7 +468,7 @@ func _create_rect2_property_control(prop: Dictionary, target_type: String) -> vo
 		container.add_child(row)
 
 		# Store control info
-		var control_key = "%s_%s" % [prop_name, component]
+		var control_key = "%s_%s" % [prop_name, comp.name]
 		if target_type == "arena":
 			_arena_property_controls[control_key] = {
 				"slider": slider, "label": value_line_edit, "is_int": true, "component": comp.name
