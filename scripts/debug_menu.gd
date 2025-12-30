@@ -4,6 +4,7 @@ extends Control
 @export var enemy_group: String = "enemies"
 @export var player_group: String = "player"
 @export var arena_group: String = "arena"
+@export var boss_config_path: String = "res://config/arenas/dvd_boss_arena.cfg"
 
 var _bosses: Array = []
 var _boss: Node = null
@@ -1132,11 +1133,16 @@ func _collect_arena_values(arena: Node) -> Dictionary:
 
 func _write_boss_config(values: Dictionary) -> void:
 	var config := ConfigFile.new()
+	var load_err := config.load(boss_config_path)
+	if load_err != OK:
+		push_warning("Failed to load existing boss config, creating new one")
 	for key in values.keys():
 		config.set_value("boss", key, values[key])
-	var err := config.save("user://boss_config.cfg")
+	var err := config.save(boss_config_path)
 	if err != OK:
-		push_warning("Failed to write boss config")
+		push_warning("Failed to write boss config to: " + boss_config_path)
+	else:
+		print("Boss config saved to: " + boss_config_path)
 
 
 func _write_player_config(values: Dictionary) -> void:
@@ -1185,14 +1191,25 @@ func _write_arena_config(values: Dictionary) -> void:
 
 func _read_boss_config() -> Dictionary:
 	var config := ConfigFile.new()
-	var err := config.load("user://boss_config.cfg")
+	var err := config.load(boss_config_path)
 	if err != OK:
-		return {}
+		err = config.load("user://boss_config.cfg")
+		if err != OK:
+			return {}
 	if not config.has_section("boss"):
 		return {}
 	var result: Dictionary = {}
 	for key in config.get_section_keys("boss"):
-		result[key] = config.get_value("boss", key)
+		var value = config.get_value("boss", key)
+		if value is Rect2:
+			result[key] = {
+				"x": value.position.x,
+				"y": value.position.y,
+				"width": value.size.x,
+				"height": value.size.y
+			}
+		else:
+			result[key] = value
 	return result
 
 

@@ -13,6 +13,7 @@ func _run_all_tests():
 	var test_scripts = [
 		preload("res://tests/test_game_over_window.gd").new(),
 		preload("res://tests/test_main_game_cursor.gd").new(),
+		preload("res://tests/test_debug_menu_config.gd").new(),
 	]
 
 	var success = true

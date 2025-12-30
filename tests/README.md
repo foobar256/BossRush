@@ -6,6 +6,7 @@ This directory contains automated tests for game over and cursor behavior.
 
 - `test_game_over_window.gd` - Game over window test suite with 6 test categories
 - `test_main_game_cursor.gd` - Main game cursor behavior tests
+- `test_debug_menu_config.gd` - Debug menu boss config persistence tests
 - `run_tests.gd` - Test runner script
 - `test_runner.tscn` - Scene for running tests in Godot
 
@@ -38,6 +39,7 @@ The test suite covers:
 5. **Signal Connections** - Validates signal emission from button presses
 6. **Main Game Integration** - Ensures proper integration with main game scene
 7. **Cursor Behavior** - Confirms game over shows the standard cursor and hides crosshair
+8. **Debug Menu Config** - Verifies boss config saves and loads persisted values
 
 ## Fix Summary
 
