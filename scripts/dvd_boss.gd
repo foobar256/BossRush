@@ -226,9 +226,12 @@ func _split() -> void:
 		child.max_health = new_max_health
 		child.current_health = new_max_health
 		child.max_shield = max_shield * split_scale
-		child.current_shield = 0.0  # Shield usually doesn't split/regen here based on request
+		child.current_shield = 0.0
 		child.speed = speed
+		if _is_combat_active:
+			child.start_combat()
 		child.bounds_node = bounds_node
+
 		child.text = text
 		child.text_color = text_color
 		child.box_color = box_color
