@@ -5,6 +5,7 @@ var _game_over_window: Control
 @onready var _player: Node2D = $Player
 @onready var _arena_manager: Node2D = $ArenaManager
 @onready var _crosshair_cursor: CanvasLayer = $Crosshair
+@onready var _countdown_ui: CanvasLayer = $CountdownUI
 
 
 func _ready() -> void:
@@ -28,16 +29,16 @@ func _ready() -> void:
 			_game_over_window.main_menu_pressed.connect(_on_main_menu_pressed)
 		_game_over_window.visible = false
 
+	if _countdown_ui != null:
+		_countdown_ui.countdown_finished.connect(_on_countdown_finished)
+
 
 func _setup_arena_elements() -> void:
 	if _arena_manager == null:
 		return
 
-	# Set player position and bounds from arena
+	# Set player bounds from arena
 	if _player != null:
-		var player_spawn = _arena_manager.get_player_spawn()
-		_player.global_position = player_spawn
-		# Update player bounds to match arena
 		_player.bounds = _arena_manager.get_bounds()
 
 	# Spawn boss
@@ -64,6 +65,20 @@ func _setup_arena_elements() -> void:
 
 	# Add boss to scene
 	add_child(boss)
+
+	# Set player position below boss
+	if _player != null:
+		# Position player 150 units below boss
+		_player.global_position = boss.global_position + Vector2(0, 150)
+
+	# Start countdown
+	if _countdown_ui != null:
+		get_tree().paused = true
+		_countdown_ui.start_countdown()
+
+
+func _on_countdown_finished() -> void:
+	get_tree().paused = false
 
 
 func _on_player_died() -> void:

@@ -1,0 +1,27 @@
+[gd_scene load_steps=3 format=3 uid="uid://b6p2x8q8y4n6t"]
+
+[ext_resource type="Script" path="res://scripts/countdown_ui.gd" id="1_countdown"]
+[ext_resource type="FontFile" uid="uid://2qo4snrstb6g" path="res://assets/fonts/CozetteVectorBold.ttf" id="2_font"]
+
+[node name="CountdownUI" type="CanvasLayer"]
+process_mode = 3
+layer = 20
+visible = false
+script = ExtResource("1_countdown")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="CenterContainer"]
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 12
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 128
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1
