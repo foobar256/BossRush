@@ -60,6 +60,26 @@ func _setup_arena_elements() -> void:
 	if boss == null:
 		return
 
+	# Apply boss properties from config
+	var arena_data = _arena_manager.get_arena_data()
+	if arena_data.has("boss_properties"):
+		var props = arena_data.boss_properties
+		for prop_name in props:
+			if prop_name in boss:
+				var value = props[prop_name]
+				# If the value is a string and it looks like a resource path, try to load it
+				if (
+					value is String
+					and (value.begins_with("res://") or value.begins_with("user://"))
+				):
+					var res = load(value)
+					if res != null:
+						boss.set(prop_name, res)
+					else:
+						boss.set(prop_name, value)
+				else:
+					boss.set(prop_name, value)
+
 	# Set boss position
 	boss.position = boss_spawns[0]
 

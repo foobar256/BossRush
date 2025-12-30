@@ -468,7 +468,7 @@ func _create_rect2_property_control(prop: Dictionary, target_type: String) -> vo
 		container.add_child(row)
 
 		# Store control info
-		var control_key = "%s_%s" % [prop_name, comp.name]
+		var control_key = "%s_%s" % [prop_name, component]
 		if target_type == "arena":
 			_arena_property_controls[control_key] = {
 				"slider": slider, "label": value_line_edit, "is_int": true, "component": comp.name
@@ -531,14 +531,17 @@ func _apply_slider_range(
 	slider: HSlider, prop: Dictionary, value: float, target_type: String
 ) -> void:
 	var prop_name: String = prop.get("name", "")
-	if prop_name == "current_health":
+	if prop_name == "current_health" or prop_name == "current_shield":
 		slider.min_value = 0.0
-		var max_health := 1.0
+		var max_val := 1.0
 		if target_type == "boss":
-			max_health = _get_max_boss_health()
+			if prop_name == "current_health":
+				max_val = _get_max_boss_health()
+			else:
+				max_val = _get_max_boss_shield()
 		elif target_type == "player":
-			max_health = _get_max_player_health()
-		slider.max_value = max(1.0, max_health)
+			max_val = _get_max_player_health()
+		slider.max_value = max(1.0, max_val)
 		slider.step = 1.0
 		return
 
@@ -598,6 +601,8 @@ func _on_boss_slider_changed(value: float, prop_name: String) -> void:
 			line_edit.text = _format_value(value, false)
 	if prop_name == "max_health" and _boss_property_controls.has("current_health"):
 		_update_boss_current_health_control()
+	if prop_name == "max_shield" and _boss_property_controls.has("current_shield"):
+		_update_boss_current_shield_control()
 	_refresh_boss_visuals()
 
 
@@ -779,6 +784,24 @@ func _update_boss_current_health_control() -> void:
 		line_edit.text = _format_value(clamped, true)
 
 
+func _update_boss_current_shield_control() -> void:
+	var info: Dictionary = _boss_property_controls.get("current_shield", {})
+	var slider: HSlider = info.get("slider") as HSlider
+	var line_edit: LineEdit = info.get("label") as LineEdit
+	if slider == null or _bosses.is_empty():
+		return
+	var max_shield := _get_max_boss_shield()
+	slider.max_value = max(1.0, max_shield)
+	var clamped: float = clamp(float(slider.value), 0.0, max_shield)
+	for boss in _bosses:
+		if not is_instance_valid(boss):
+			continue
+		boss.current_shield = clamp(clamped, 0.0, float(boss.max_shield))
+	slider.value = clamped
+	if line_edit != null and not line_edit.has_focus():
+		line_edit.text = _format_value(clamped, true)
+
+
 func _update_player_current_health_control() -> void:
 	var info: Dictionary = _player_property_controls.get("current_health", {})
 	var slider: HSlider = info.get("slider") as HSlider
@@ -901,6 +924,15 @@ func _get_max_boss_health() -> float:
 		if not is_instance_valid(boss):
 			continue
 		max_value = max(max_value, float(boss.max_health))
+	return max_value
+
+
+func _get_max_boss_shield() -> float:
+	var max_value := 1.0
+	for boss in _bosses:
+		if not is_instance_valid(boss):
+			continue
+		max_value = max(max_value, float(boss.max_shield))
 	return max_value
 
 
@@ -1068,7 +1100,7 @@ func _collect_boss_values(boss: Node) -> Dictionary:
 		if not _is_tweakable_property(prop):
 			continue
 		var prop_name: String = prop.get("name", "")
-		if prop_name == "":
+		if prop_name == "" or prop_name.begins_with("current_"):
 			continue
 		var type: int = prop.get("type", TYPE_NIL)
 		if type == TYPE_RECT2:
@@ -1091,7 +1123,7 @@ func _collect_player_values(player: Node) -> Dictionary:
 		if not _is_tweakable_property(prop):
 			continue
 		var prop_name: String = prop.get("name", "")
-		if prop_name == "":
+		if prop_name == "" or prop_name.begins_with("current_"):
 			continue
 		var type: int = prop.get("type", TYPE_NIL)
 		if type == TYPE_RECT2:
@@ -1114,7 +1146,7 @@ func _collect_arena_values(arena: Node) -> Dictionary:
 		if not _is_tweakable_property(prop):
 			continue
 		var prop_name: String = prop.get("name", "")
-		if prop_name == "":
+		if prop_name == "" or prop_name.begins_with("current_"):
 			continue
 		var type: int = prop.get("type", TYPE_NIL)
 		if type == TYPE_RECT2:

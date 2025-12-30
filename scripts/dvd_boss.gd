@@ -17,6 +17,7 @@ signal died
 @export var text: String = "DVD"
 @export var text_color: Color = Color(1, 1, 1, 1)
 @export var font: Font = preload("res://assets/fonts/CozetteVectorBold.ttf")
+@export var texture: Texture2D
 @export var boss_scene: PackedScene
 @export var health_bar_height: float = 8.0
 @export var health_bar_back_color: Color = Color(0.1, 0.1, 0.1, 0.85)
@@ -32,6 +33,7 @@ var _is_combat_active: bool = false
 
 @onready var box: ColorRect = $Box
 @onready var label: Label = $Label
+@onready var sprite: Sprite2D = get_node_or_null("Sprite2D")
 @onready var health_bar_back: ColorRect = $HealthBarBack
 @onready var health_bar_fill: ColorRect = $HealthBarFill
 @onready var shield_bar_fill: ColorRect = $ShieldBarFill
@@ -146,6 +148,17 @@ func _apply_visuals() -> void:
 		box.color = box_color
 		box.position = Vector2(-size * 0.5, -size * 0.5)
 		box.size = Vector2(size, size)
+		box.visible = texture == null
+
+	if sprite != null:
+		sprite.texture = texture
+		if texture != null:
+			var tex_size = texture.get_size()
+			if tex_size.x > 0 and tex_size.y > 0:
+				sprite.scale = Vector2(size / tex_size.x, size / tex_size.y)
+		sprite.position = Vector2.ZERO
+		sprite.visible = texture != null
+
 	if label != null:
 		label.text = text
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -154,9 +167,11 @@ func _apply_visuals() -> void:
 		label.size = Vector2(size, size)
 		var label_settings := LabelSettings.new()
 		label_settings.font = font
-		label_settings.font_size = int(clamp(size * 0.35, 12.0, 64.0))
+		label_settings.font_size = int(clamp(size * 0.35, 12.0, 256.0))
 		label_settings.font_color = text_color
 		label.label_settings = label_settings
+		label.visible = texture == null
+
 	if health_bar_back != null:
 		health_bar_back.color = health_bar_back_color
 		health_bar_back.position = Vector2(-size * 0.5, size * 0.5 + health_bar_offset)
@@ -236,6 +251,7 @@ func _split() -> void:
 		child.text_color = text_color
 		child.box_color = box_color
 		child.font = font
+		child.texture = texture
 		var new_velocity := Vector2.RIGHT.rotated(randf() * TAU) * speed
 		child.set_velocity(new_velocity)
 		get_parent().add_child(child)

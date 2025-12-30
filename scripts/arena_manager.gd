@@ -70,9 +70,14 @@ func create_arena(arena_name: String) -> bool:
 	else:
 		_boss_spawns = []
 
-	# Get boss scene if needed
-	if config.has_section_key("boss", "scene"):
-		_current_arena_data.boss_scene = config.get_value("boss", "scene")
+	# Get boss scene and properties
+	_current_arena_data.boss_properties = {}
+	if config.has_section("boss"):
+		for key in config.get_section_keys("boss"):
+			if key == "scene":
+				_current_arena_data.boss_scene = config.get_value("boss", "scene")
+			elif key != "spawn_position":
+				_current_arena_data.boss_properties[key] = config.get_value("boss", key)
 
 	# Create the visual bounds
 	_create_bounds_visual()
