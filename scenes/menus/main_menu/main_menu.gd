@@ -31,12 +31,14 @@ func _open_boss_selection() -> void:
 		GameState.reset()
 		load_game_scene()
 		return
-	
+
 	var boss_selection_scene := _open_sub_menu(boss_selection_packed_scene)
 	if boss_selection_scene.has_signal("boss_selected"):
-		boss_selection_scene.connect("boss_selected", func():
-			GameState.reset()
-			load_game_scene()
+		boss_selection_scene.connect(
+			"boss_selected",
+			func():
+				GameState.reset()
+				load_game_scene()
 		)
 
 

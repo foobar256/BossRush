@@ -24,6 +24,7 @@ var _ice_patch_timer: float = 0.0
 @onready var body: Polygon2D = $Body
 @onready var hull_details: Node2D = $HullDetails
 
+
 func _ready() -> void:
 	add_to_group("enemies")
 	add_to_group("boss")
@@ -33,41 +34,47 @@ func _ready() -> void:
 	_velocity = Vector2.RIGHT.rotated(randf() * TAU) * speed
 	_setup_visuals()
 
+
 func start_combat() -> void:
 	_is_combat_active = true
 
+
 func take_damage(amount: float) -> void:
-	if amount <= 0.0: return
+	if amount <= 0.0:
+		return
 	if current_shield > 0.0:
 		var shield_damage = min(current_shield, amount)
 		current_shield -= shield_damage
 		amount -= shield_damage
 	if amount > 0.0:
 		current_health = max(current_health - amount, 0.0)
-	
+
 	emit_signal("health_changed", current_health, max_health)
 	_sync_boss_bar()
 	if current_health <= 0.0:
 		emit_signal("died")
 		queue_free()
 
+
 func get_bounds_rect() -> Rect2:
 	var half := size * 0.5
 	return Rect2(global_position - Vector2(half, half), Vector2(size, size))
 
+
 func _physics_process(delta: float) -> void:
-	if not _is_combat_active: return
-	
+	if not _is_combat_active:
+		return
+
 	# Slow, heavy movement
 	global_position += _velocity * delta
 	var bounds = _get_world_bounds()
 	var half = size * 0.5
-	
+
 	if global_position.x < bounds.position.x + half:
 		_velocity.x = abs(_velocity.x)
 	elif global_position.x > bounds.position.x + bounds.size.x - half:
 		_velocity.x = -abs(_velocity.x)
-	
+
 	if global_position.y < bounds.position.y + half:
 		_velocity.y = abs(_velocity.y)
 	elif global_position.y > bounds.position.y + bounds.size.y - half:
@@ -78,22 +85,25 @@ func _physics_process(delta: float) -> void:
 	if _gun_timer <= 0.0:
 		_fire_cannons()
 		_gun_timer = randf_range(0.8, 1.5)
-	
+
 	_rocket_timer -= delta
 	if _rocket_timer <= 0.0 and current_health < max_health * 0.75:
 		_fire_rockets()
 		_rocket_timer = randf_range(4.0, 6.0)
-	
+
 	_ice_patch_timer -= delta
 	if _ice_patch_timer <= 0.0:
 		_drop_ice_patch()
 		_ice_patch_timer = randf_range(3.0, 5.0)
 
+
 func _fire_cannons() -> void:
-	if bullet_scene == null: return
+	if bullet_scene == null:
+		return
 	var player = get_tree().get_first_node_in_group("player")
-	if player == null: return
-	
+	if player == null:
+		return
+
 	# Fire 3 bullets in a small spread
 	var base_dir = (player.global_position - global_position).normalized()
 	for i in range(-1, 2):
@@ -104,10 +114,12 @@ func _fire_cannons() -> void:
 		if bullet.has_method("setup"):
 			bullet.setup(dir, _get_world_bounds(), 10.0)
 		if "color" in bullet:
-			bullet.color = Color(1.0, 0.8, 0.2) # Tracer/Shell color
+			bullet.color = Color(1.0, 0.8, 0.2)  # Tracer/Shell color
+
 
 func _fire_rockets() -> void:
-	if rocket_scene == null: return
+	if rocket_scene == null:
+		return
 	for i in range(4):
 		var rocket = rocket_scene.instantiate()
 		get_parent().add_child(rocket)
@@ -119,27 +131,34 @@ func _fire_rockets() -> void:
 			rocket.setup(launch_dir, _get_world_bounds(), 25.0)
 		# Rockets should have tracking, which we'll handle in their script
 
+
 func _drop_ice_patch() -> void:
-	if ice_patch_scene == null: return
+	if ice_patch_scene == null:
+		return
 	var patch = ice_patch_scene.instantiate()
 	get_parent().add_child(patch)
 	patch.global_position = global_position
 
+
 func _setup_visuals() -> void:
-	if body == null: return
+	if body == null:
+		return
 	# A more rectangular ship-like shape
-	var points = PackedVector2Array([
-		Vector2(-size*0.4, -size*0.5), # Bow
-		Vector2(size*0.4, -size*0.5),
-		Vector2(size*0.5, -size*0.2),
-		Vector2(size*0.5, size*0.4),
-		Vector2(size*0.3, size*0.5),
-		Vector2(-size*0.3, size*0.5),
-		Vector2(-size*0.5, size*0.4),
-		Vector2(-size*0.5, -size*0.2),
-	])
+	var points = PackedVector2Array(
+		[
+			Vector2(-size * 0.4, -size * 0.5),  # Bow
+			Vector2(size * 0.4, -size * 0.5),
+			Vector2(size * 0.5, -size * 0.2),
+			Vector2(size * 0.5, size * 0.4),
+			Vector2(size * 0.3, size * 0.5),
+			Vector2(-size * 0.3, size * 0.5),
+			Vector2(-size * 0.5, size * 0.4),
+			Vector2(-size * 0.5, -size * 0.2),
+		]
+	)
 	body.polygon = points
-	body.color = Color(0.6, 0.7, 0.8, 1.0) # Pykrete color
+	body.color = Color(0.6, 0.7, 0.8, 1.0)  # Pykrete color
+
 
 func _get_world_bounds() -> Rect2:
 	var arena_manager = get_tree().get_first_node_in_group("arena_manager")
@@ -147,8 +166,10 @@ func _get_world_bounds() -> Rect2:
 		return arena_manager.get_bounds()
 	return Rect2(Vector2.ZERO, get_viewport_rect().size)
 
+
 func _find_boss_bar() -> Node:
 	return get_tree().get_first_node_in_group("boss_health_bar")
+
 
 func _sync_boss_bar() -> void:
 	if _boss_bar != null and _boss_bar.has_method("update_boss_stats"):
