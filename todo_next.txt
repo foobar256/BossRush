@@ -1,5 +1,6 @@
 Next ideas
-- Add basic boss behavior (movement/attack patterns) so combat has pressure.
+- Add more attack patterns to Glacial Sentinel (e.g. Blizzard, Ice Pillars).
+- Implement player "Freeze" state when hit by frost bolts.
 - Add hit feedback (flash, shake, particles) for boss and projectile impacts.
 - Add player upgrades (fire rate, damage, spread) via pickups or progression.
 - Change icon

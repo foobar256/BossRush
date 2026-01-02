@@ -4,6 +4,8 @@ extends MainMenu
 
 ## Optional scene to open when the player clicks a 'Level Select' button.
 @export var level_select_packed_scene: PackedScene
+## Optional scene to open when the player clicks a 'New Game' button.
+@export var boss_selection_packed_scene: PackedScene
 ## If true, have the player confirm before starting a new game if a game is in progress.
 @export var confirm_new_game: bool = true
 
@@ -21,8 +23,21 @@ func new_game() -> void:
 	if confirm_new_game and continue_game_button.visible:
 		new_game_confirmation.show()
 	else:
+		_open_boss_selection()
+
+
+func _open_boss_selection() -> void:
+	if boss_selection_packed_scene == null:
 		GameState.reset()
 		load_game_scene()
+		return
+	
+	var boss_selection_scene := _open_sub_menu(boss_selection_packed_scene)
+	if boss_selection_scene.has_signal("boss_selected"):
+		boss_selection_scene.connect("boss_selected", func():
+			GameState.reset()
+			load_game_scene()
+		)
 
 
 func _add_level_select_if_set() -> void:
@@ -57,5 +72,4 @@ func _on_level_select_button_pressed() -> void:
 
 
 func _on_new_game_confirmation_confirmed() -> void:
-	GameState.reset()
-	load_game_scene()
+	_open_boss_selection()

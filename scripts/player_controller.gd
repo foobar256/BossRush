@@ -17,14 +17,19 @@ signal died
 @export var knockback_speed: float = 520.0
 @export var knockback_duration: float = 0.12
 @export var bounds: Rect2 = Rect2(0, 0, 1280, 720)  # Default, will be set from arena config
+@export var acceleration: float = 2400.0
+@export var friction: float = 12.0
+@export var friction_multiplier: float = 1.0
 
 var _fire_timer: float = 0.0
 var _invincibility_timer: float = 0.0
 var _knockback_timer: float = 0.0
 var _knockback_velocity: Vector2 = Vector2.ZERO
+var _velocity: Vector2 = Vector2.ZERO
 var _is_dead: bool = false
 var _is_combat_active: bool = false
 var _arena_manager: Node2D = null
+
 @onready var _projectile_parent: Node = _find_projectile_parent()
 
 
@@ -76,12 +81,21 @@ func _process(delta: float) -> void:
 	if _knockback_timer > 0.0:
 		position += _knockback_velocity * delta
 		_knockback_timer = max(_knockback_timer - delta, 0.0)
+
 	var input_vector := Vector2(
 		Input.get_action_strength("move_right") - Input.get_action_strength("move_left"),
 		Input.get_action_strength("move_down") - Input.get_action_strength("move_up")
 	)
+
+	var target_vel = input_vector.normalized() * move_speed
+	var current_friction = friction * friction_multiplier
+
 	if input_vector.length_squared() > 0.0:
-		position += input_vector.normalized() * move_speed * delta
+		_velocity = _velocity.move_toward(target_vel, acceleration * delta)
+	else:
+		_velocity = _velocity.move_toward(Vector2.ZERO, current_friction * move_speed * delta)
+
+	position += _velocity * delta
 	var min_pos := bounds.position
 	var max_pos := bounds.position + bounds.size
 	position.x = clamp(position.x, min_pos.x, max_pos.x)

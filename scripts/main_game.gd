@@ -14,7 +14,10 @@ func _ready() -> void:
 
 	# Create the arena first
 	if _arena_manager != null:
-		_arena_manager.create_arena("dvd_boss_arena")
+		var arena_name = GameState.get_selected_arena()
+		if arena_name == "":
+			arena_name = "habbakuk_arena"
+		_arena_manager.create_arena(arena_name)
 		# Wait a frame for arena to be created, then spawn boss and set player position
 		call_deferred("_setup_arena_elements")
 

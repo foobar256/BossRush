@@ -5,10 +5,12 @@
 [ext_resource type="PackedScene" uid="uid://mhk7ai1jtttm" path="res://scenes/windows/main_menu_options_window.tscn" id="3_0jpat"]
 [ext_resource type="PackedScene" uid="uid://dnaejbfe1nvn1" path="res://scenes/windows/main_menu_credits_window.tscn" id="4_m0ubd"]
 [ext_resource type="PackedScene" uid="uid://cwt4p3bufkke5" path="res://addons/maaacks_game_template/base/nodes/windows/confirmation_overlaid_window.tscn" id="5_627ab"]
+[ext_resource type="PackedScene" path="res://scenes/menus/boss_selection/boss_selection_menu.tscn" id="6_boss"]
 
 [node name="MainMenu" instance=ExtResource("1_ub2bi")]
 script = ExtResource("2_x31ro")
 level_select_packed_scene = null
+boss_selection_packed_scene = ExtResource("6_boss")
 confirm_new_game = true
 options_packed_scene = ExtResource("3_0jpat")
 credits_packed_scene = ExtResource("4_m0ubd")

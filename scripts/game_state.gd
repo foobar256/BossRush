@@ -7,6 +7,7 @@ const FILE_PATH = "res://scripts/game_state.gd"
 @export var level_states: Dictionary = {}
 @export var current_level_path: String
 @export var continue_level_path: String
+@export var selected_arena: String = "habbakuk_arena"
 @export var total_games_played: int
 @export var play_time: int
 @export var total_time: int
@@ -60,6 +61,17 @@ static func set_current_level(level_path: String) -> void:
 	var game_state := get_or_create_state()
 	game_state.current_level_path = level_path
 	GlobalState.save()
+
+
+static func set_selected_arena(arena_name: String) -> void:
+	var game_state := get_or_create_state()
+	game_state.selected_arena = arena_name
+	GlobalState.save()
+
+
+static func get_selected_arena() -> String:
+	var game_state := get_or_create_state()
+	return game_state.selected_arena
 
 
 static func start_game() -> void:
