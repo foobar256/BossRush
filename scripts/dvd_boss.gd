@@ -7,7 +7,7 @@ signal died
 @export var current_health: float = 200.0
 @export var max_shield: float = 100.0
 @export var current_shield: float = 100.0
-@export var size: float = 120.0
+@export var boss_size: Vector2 = Vector2(160.0, 90.0)
 @export var speed: float = 320.0
 @export var bounds_node: NodePath
 @export var min_size: float = 30.0
@@ -25,6 +25,12 @@ signal died
 @export var shield_bar_fill_color: Color = Color(0.1, 0.5, 0.9, 1.0)
 @export var health_bar_offset: float = 6.0
 @export var health_bar_path: NodePath
+
+var size: float:
+	get:
+		return boss_size.x
+	set(value):
+		boss_size = Vector2(value, value * (90.0 / 160.0))
 
 var _boss_bar: Node = null
 var _velocity: Vector2 = Vector2.ZERO
@@ -71,7 +77,7 @@ func take_damage(amount: float) -> void:
 	_sync_boss_bar()
 	_update_health_bar()
 	if not _has_split and current_health <= max_health * 0.5:
-		if size * split_scale >= min_size:
+		if min(boss_size.x, boss_size.y) * split_scale >= min_size:
 			_split()
 			return
 	if current_health <= 0.0:
@@ -80,8 +86,8 @@ func take_damage(amount: float) -> void:
 
 
 func get_bounds_rect() -> Rect2:
-	var half := size * 0.5
-	return Rect2(global_position - Vector2(half, half), Vector2(size, size))
+	var half := boss_size * 0.5
+	return Rect2(global_position - half, boss_size)
 
 
 func set_velocity(velocity: Vector2) -> void:
@@ -123,11 +129,11 @@ func _physics_process(delta: float) -> void:
 	if bounds.size == Vector2.ZERO:
 		return
 	global_position += _velocity * delta
-	var half := size * 0.5
-	var min_x := bounds.position.x + half
-	var max_x := bounds.position.x + bounds.size.x - half
-	var min_y := bounds.position.y + half
-	var max_y := bounds.position.y + bounds.size.y - half
+	var half := boss_size * 0.5
+	var min_x := bounds.position.x + half.x
+	var max_x := bounds.position.x + bounds.size.x - half.x
+	var min_y := bounds.position.y + half.y
+	var max_y := bounds.position.y + bounds.size.y - half.y
 	if global_position.x < min_x:
 		global_position.x = min_x
 		_velocity.x = abs(_velocity.x)
@@ -146,8 +152,8 @@ func _physics_process(delta: float) -> void:
 func _apply_visuals() -> void:
 	if box != null:
 		box.color = box_color
-		box.position = Vector2(-size * 0.5, -size * 0.5)
-		box.size = Vector2(size, size)
+		box.position = -boss_size * 0.5
+		box.size = boss_size
 		box.visible = texture == null
 
 	if sprite != null:
@@ -155,7 +161,7 @@ func _apply_visuals() -> void:
 		if texture != null:
 			var tex_size = texture.get_size()
 			if tex_size.x > 0 and tex_size.y > 0:
-				sprite.scale = Vector2(size / tex_size.x, size / tex_size.y)
+				sprite.scale = Vector2(boss_size.x / tex_size.x, boss_size.y / tex_size.y)
 		sprite.position = Vector2.ZERO
 		sprite.visible = texture != null
 
@@ -163,27 +169,33 @@ func _apply_visuals() -> void:
 		label.text = text
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.position = Vector2(-size * 0.5, -size * 0.5)
-		label.size = Vector2(size, size)
+		label.position = -boss_size * 0.5
+		label.size = boss_size
 		var label_settings := LabelSettings.new()
 		label_settings.font = font
-		label_settings.font_size = int(clamp(size * 0.35, 12.0, 256.0))
+		label_settings.font_size = int(clamp(min(boss_size.x, boss_size.y) * 0.35, 12.0, 256.0))
 		label_settings.font_color = text_color
 		label.label_settings = label_settings
 		label.visible = texture == null
 
 	if health_bar_back != null:
 		health_bar_back.color = health_bar_back_color
-		health_bar_back.position = Vector2(-size * 0.5, size * 0.5 + health_bar_offset)
-		health_bar_back.size = Vector2(size, health_bar_height)
+		health_bar_back.position = Vector2(
+			-boss_size.x * 0.5, boss_size.y * 0.5 + health_bar_offset
+		)
+		health_bar_back.size = Vector2(boss_size.x, health_bar_height)
 	if health_bar_fill != null:
 		health_bar_fill.color = health_bar_fill_color
-		health_bar_fill.position = Vector2(-size * 0.5, size * 0.5 + health_bar_offset)
-		health_bar_fill.size = Vector2(size, health_bar_height)
+		health_bar_fill.position = Vector2(
+			-boss_size.x * 0.5, boss_size.y * 0.5 + health_bar_offset
+		)
+		health_bar_fill.size = Vector2(boss_size.x, health_bar_height)
 	if shield_bar_fill != null:
 		shield_bar_fill.color = shield_bar_fill_color
-		shield_bar_fill.position = Vector2(-size * 0.5, size * 0.5 + health_bar_offset)
-		shield_bar_fill.size = Vector2(size, health_bar_height)
+		shield_bar_fill.position = Vector2(
+			-boss_size.x * 0.5, boss_size.y * 0.5 + health_bar_offset
+		)
+		shield_bar_fill.size = Vector2(boss_size.x, health_bar_height)
 
 
 func _update_health_bar() -> void:
@@ -191,13 +203,13 @@ func _update_health_bar() -> void:
 		var health_percent := 0.0
 		if max_health > 0.0:
 			health_percent = current_health / max_health
-		health_bar_fill.size = Vector2(size * health_percent, health_bar_height)
+		health_bar_fill.size = Vector2(boss_size.x * health_percent, health_bar_height)
 
 	if shield_bar_fill != null:
 		var shield_percent := 0.0
 		if max_shield > 0.0:
 			shield_percent = current_shield / max_shield
-		shield_bar_fill.size = Vector2(size * shield_percent, health_bar_height)
+		shield_bar_fill.size = Vector2(boss_size.x * shield_percent, health_bar_height)
 
 
 func _get_world_bounds() -> Rect2:
@@ -227,7 +239,7 @@ func _split() -> void:
 		scene = load(scene_path)
 		if scene == null:
 			return
-	var new_size := size * split_scale
+	var new_size := boss_size * split_scale
 	var new_max_health := max_health * split_scale
 	var split_offsets := [
 		Vector2(-split_offset, 0.0),
@@ -237,7 +249,7 @@ func _split() -> void:
 		var child := scene.instantiate()
 		if child == null:
 			continue
-		child.size = new_size
+		child.boss_size = new_size
 		child.max_health = new_max_health
 		child.current_health = new_max_health
 		child.max_shield = max_shield * split_scale
