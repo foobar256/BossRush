@@ -1,6 +1,6 @@
-[gd_resource type="Theme" load_steps=12 format=3 uid="uid://d8kilkm8iddh"]
+[gd_resource type="Theme" load_steps=12 format=3]
 
-[ext_resource type="FontFile" uid="uid://dpmq4rdrrljas" path="res://assets/fonts/CozetteVector.ttf" id="1"]
+[ext_resource type="FontFile" path="res://assets/fonts/SourGummy/SourGummy-Regular.ttf" id="1"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_focus"]
 bg_color = Color(0, 0, 0, 0)

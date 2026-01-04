@@ -16,7 +16,7 @@ signal died
 @export var box_color: Color = Color(0.1, 0.1, 0.1, 1)
 @export var text: String = "DVD"
 @export var text_color: Color = Color(1, 1, 1, 1)
-@export var font: Font = preload("res://assets/fonts/CozetteVectorBold.ttf")
+@export var font: Font = preload("res://assets/fonts/SourGummy/SourGummy-Bold.ttf")
 @export var texture: Texture2D
 @export var boss_scene: PackedScene
 @export var health_bar_height: float = 8.0
