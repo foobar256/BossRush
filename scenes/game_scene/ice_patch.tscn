@@ -6,5 +6,5 @@
 script = ExtResource("1_patch")
 
 [node name="Polygon2D" type="Polygon2D" parent="."]
-color = Color(0.5, 0.8, 1, 0.4)
+color = Color(0.4, 0.6, 0.8, 0.35)
 polygon = PackedVector2Array(0, -30, 25, -20, 35, 0, 25, 20, 0, 30, -25, 20, -35, 0, -25, -20)

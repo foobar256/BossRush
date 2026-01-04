@@ -23,16 +23,16 @@ signal died
 @export var min_size: float = 30.0
 @export var split_scale: float = 0.5
 @export var split_offset: float = 28.0
-@export var box_color: Color = Color(0.1, 0.1, 0.1, 1)
+@export var box_color: Color = Color(0.18, 0.18, 0.22, 1)
 @export var text: String = "DVD"
-@export var text_color: Color = Color(1, 1, 1, 1)
+@export var text_color: Color = Color(0.9, 0.86, 0.8, 1)
 @export var font: Font = preload("res://assets/fonts/SourGummy/SourGummy-Bold.ttf")
 @export var texture: Texture2D
 @export var boss_scene: PackedScene
 @export var health_bar_height: float = 8.0
-@export var health_bar_back_color: Color = Color(0.1, 0.1, 0.1, 0.85)
-@export var health_bar_fill_color: Color = Color(0.9, 0.2, 0.2, 1.0)
-@export var shield_bar_fill_color: Color = Color(0.1, 0.5, 0.9, 1.0)
+@export var health_bar_back_color: Color = Color(0.12, 0.12, 0.15, 0.85)
+@export var health_bar_fill_color: Color = Color(0.8, 0.4, 0.4, 1.0)
+@export var shield_bar_fill_color: Color = Color(0.4, 0.6, 0.8, 1.0)
 @export var health_bar_offset: float = 6.0
 @export var health_bar_path: NodePath
 
@@ -56,6 +56,13 @@ var _is_combat_active: bool = false
 
 
 func _ready() -> void:
+	box_color = GameColors.BOSS_DVD
+	text_color = GameColors.TEXT
+	health_bar_back_color = GameColors.BACKGROUND
+	health_bar_back_color.a = 0.85
+	health_bar_fill_color = GameColors.HEALTH
+	shield_bar_fill_color = GameColors.SHIELD
+	
 	add_to_group("enemies")
 	add_to_group("boss")
 	current_health = clamp(current_health, 0.0, max_health)
@@ -183,7 +190,7 @@ func _apply_visuals() -> void:
 		label.size = boss_size
 		var label_settings := LabelSettings.new()
 		label_settings.font = font
-		label_settings.font_size = int(clamp(min(boss_size.x, boss_size.y) * 0.35, 12.0, 256.0))
+		label_settings.font_size = int(clamp(min(boss_size.x, boss_size.y) * 0.85, 12.0, 256.0))
 		label_settings.font_color = text_color
 		label.label_settings = label_settings
 		label.visible = texture == null

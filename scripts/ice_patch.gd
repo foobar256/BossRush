@@ -12,6 +12,10 @@ var _is_fading: bool = false
 
 func _ready() -> void:
 	_timer = duration
+	
+	var poly = get_node_or_null("Polygon2D")
+	if poly:
+		poly.color = GameColors.ICE_PATCH
 
 	# Initial scale animation
 	scale = Vector2.ZERO

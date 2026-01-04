@@ -4,7 +4,7 @@ signal died
 
 @export var move_speed: float = 220.0
 @export var radius: float = 6.0
-@export var dot_color: Color = Color(1, 1, 1, 1)
+@export var dot_color: Color = Color(0.9, 0.86, 0.8, 1)
 @export var projectile_scene: PackedScene
 @export var projectile_speed: float = 650.0
 @export var projectile_damage: float = 10.0
@@ -34,6 +34,7 @@ var _arena_manager: Node2D = null
 
 
 func _ready() -> void:
+	dot_color = GameColors.TEXT
 	add_to_group("player")
 	current_health = clamp(current_health, 0.0, max_health)
 

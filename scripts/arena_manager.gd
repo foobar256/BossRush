@@ -50,7 +50,7 @@ func create_arena(arena_name: String) -> bool:
 	if config.has_section_key("arena", "line_color"):
 		_current_arena_data.line_color = config.get_value("arena", "line_color")
 	else:
-		_current_arena_data.line_color = Color(0.9, 0.9, 0.9, 1)
+		_current_arena_data.line_color = Color(0.4, 0.4, 0.5, 1)
 
 	if config.has_section_key("arena", "line_width"):
 		_current_arena_data.line_width = config.get_value("arena", "line_width")

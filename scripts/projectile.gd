@@ -2,11 +2,15 @@ extends Node2D
 
 @export var speed: float = 650.0
 @export var radius: float = 4.0
-@export var color: Color = Color(1, 1, 1, 1)
+@export var color: Color = Color(0.9, 0.86, 0.8, 1)
 @export var damage: float = 10.0
 
 var direction: Vector2 = Vector2.RIGHT
 var bounds: Rect2 = Rect2(0, 0, 1280, 720)
+
+
+func _ready() -> void:
+	color = GameColors.PROJECTILE_PLAYER
 
 
 func setup(direction_in: Vector2, bounds_in: Rect2, damage_in: float) -> void:

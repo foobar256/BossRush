@@ -12,6 +12,11 @@ func _ready() -> void:
 	# Set process mode to always allow input even when game is paused
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
+	var bg = get_node_or_null("Background")
+	if bg:
+		bg.color = GameColors.BACKGROUND
+		bg.color.a = 0.8
+
 	# Connect button signals
 	if _restart_button:
 		_restart_button.pressed.connect(_on_restart_button_pressed)

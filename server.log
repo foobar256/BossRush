@@ -1,0 +1,19 @@
+Starting Flask server on http://127.0.0.1:5000
+ * Serving Flask app 'image_gen_server'
+ * Debug mode: on
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5000
+Press CTRL+C to quit
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 186-061-753
+127.0.0.1 - - [02/Jan/2026 20:26:46] "POST /generate HTTP/1.1" 200 -
+127.0.0.1 - - [02/Jan/2026 20:26:46] "POST /generate HTTP/1.1" 200 -
+127.0.0.1 - - [02/Jan/2026 20:26:46] "POST /generate HTTP/1.1" 200 -
+127.0.0.1 - - [02/Jan/2026 20:26:46] "POST /generate HTTP/1.1" 200 -
+127.0.0.1 - - [02/Jan/2026 20:26:46] "GET /progress/67611c61-ba12-45b1-a2ec-d2cb29906004?polling_url=https://api.eu2.bfl.ai/v1/get_result?id%3D67611c61-ba12-45b1-a2ec-d2cb29906004 HTTP/1.1" 200 -
+127.0.0.1 - - [02/Jan/2026 20:26:46] "GET /progress/9df4073f-5e8d-4f8c-a074-5ca1f2d22003?polling_url=https://api.eu2.bfl.ai/v1/get_result?id%3D9df4073f-5e8d-4f8c-a074-5ca1f2d22003 HTTP/1.1" 200 -
+127.0.0.1 - - [02/Jan/2026 20:26:46] "GET /progress/0873ef56-036d-403c-9562-809a5418a127?polling_url=https://api.eu4.bfl.ai/v1/get_result?id%3D0873ef56-036d-403c-9562-809a5418a127 HTTP/1.1" 200 -
+127.0.0.1 - - [02/Jan/2026 20:26:46] "GET /progress/ae9c9969-a175-4925-ae0b-5f64de7cbe46?polling_url=https://api.eu4.bfl.ai/v1/get_result?id%3Dae9c9969-a175-4925-ae0b-5f64de7cbe46 HTTP/1.1" 200 -
+127.0.0.1 - - [02/Jan/2026 20:26:47] "POST /generate HTTP/1.1" 200 -
+127.0.0.1 - - [02/Jan/2026 20:26:47] "GET /progress/1cd82a91-d7b0-4259-b39d-89101062cc0f?polling_url=https://api.us2.bfl.ai/v1/get_result?id%3D1cd82a91-d7b0-4259-b39d-89101062cc0f HTTP/1.1" 200 -

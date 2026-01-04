@@ -33,6 +33,12 @@ func _ready() -> void:
 	call_deferred("_sync_boss_bar")
 	_velocity = Vector2.RIGHT.rotated(randf() * TAU) * speed
 	_setup_visuals()
+	
+	if body:
+		body.color = GameColors.HABBAKUK_BODY
+	var bridge = get_node_or_null("HullDetails/Bridge")
+	if bridge:
+		bridge.color = GameColors.HABBAKUK_BRIDGE
 
 
 func start_combat() -> void:
@@ -114,7 +120,7 @@ func _fire_cannons() -> void:
 		if bullet.has_method("setup"):
 			bullet.setup(dir, _get_world_bounds(), 10.0)
 		if "color" in bullet:
-			bullet.color = Color(1.0, 0.8, 0.2)  # Tracer/Shell color
+			bullet.color = GameColors.TRACER
 
 
 func _fire_rockets() -> void:
@@ -157,7 +163,7 @@ func _setup_visuals() -> void:
 		]
 	)
 	body.polygon = points
-	body.color = Color(0.6, 0.7, 0.8, 1.0)  # Pykrete color
+	body.color = Color(0.5, 0.6, 0.7, 1.0)  # Pykrete color (softened)
 
 
 func _get_world_bounds() -> Rect2:

@@ -5,7 +5,7 @@ extends Node2D
 		bounds = value
 		queue_redraw()
 		_update_player_bounds()
-@export var line_color: Color = Color(0.9, 0.9, 0.9, 1)
+@export var line_color: Color = Color(0.3, 0.3, 0.4, 1)
 @export var line_width: float = 2.0
 
 
@@ -14,6 +14,7 @@ func get_bounds() -> Rect2:
 
 
 func _ready() -> void:
+	line_color = GameColors.ARENA_LINE
 	add_to_group("arena")
 	queue_redraw()
 

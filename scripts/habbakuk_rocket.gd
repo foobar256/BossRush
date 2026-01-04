@@ -6,6 +6,9 @@ extends "res://scripts/enemy_projectile.gd"
 
 var _lifetime: float = 4.0
 
+func _ready() -> void:
+	color = GameColors.ROCKET
+
 
 func _process(delta: float) -> void:
 	_lifetime -= delta
@@ -32,4 +35,4 @@ func _draw() -> void:
 	var base = -direction * radius
 	var side = direction.rotated(PI / 2) * radius * 0.8
 	var points = PackedVector2Array([tip, base + side, base - side])
-	draw_colored_polygon(points, Color(1.0, 0.3, 0.1))  # Rocket orange
+	draw_colored_polygon(points, color)

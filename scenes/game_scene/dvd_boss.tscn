@@ -8,16 +8,16 @@ script = ExtResource("1_j01x1")
 bounds_node = NodePath("../Bounds")
 
 [node name="Box" type="ColorRect" parent="."]
-color = Color(0.1, 0.1, 0.1, 1)
+color = Color(0.18, 0.18, 0.22, 1)
 
 [node name="Label" type="Label" parent="."]
 text = "DVD"
 
 [node name="HealthBarBack" type="ColorRect" parent="."]
-color = Color(0.1, 0.1, 0.1, 0.85)
+color = Color(0.12, 0.12, 0.15, 0.85)
 
 [node name="HealthBarFill" type="ColorRect" parent="."]
-color = Color(0.9, 0.2, 0.2, 1)
+color = Color(0.8, 0.4, 0.4, 1)
 
 [node name="ShieldBarFill" type="ColorRect" parent="."]
-color = Color(0.1, 0.5, 0.9, 1)
+color = Color(0.4, 0.6, 0.8, 1)

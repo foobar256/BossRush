@@ -2,13 +2,17 @@ extends Control
 
 @export var max_health: float = 100.0
 @export var current_health: float = 100.0
-@export var bar_color: Color = Color(0.2, 0.8, 0.3, 1)
-@export var back_color: Color = Color(0.12, 0.12, 0.12, 0.85)
-@export var outline_color: Color = Color(1, 1, 1, 1)
+@export var bar_color: Color = Color(0.5, 0.7, 0.5, 1)
+@export var back_color: Color = Color(0.12, 0.12, 0.15, 0.85)
+@export var outline_color: Color = Color(0.9, 0.86, 0.8, 1)
 @export var outline_width: float = 2.0
 
 
 func _ready() -> void:
+	bar_color = GameColors.PLAYER_HEALTH
+	back_color = GameColors.BACKGROUND
+	back_color.a = 0.85
+	outline_color = GameColors.TEXT
 	add_to_group("player_bar")
 	queue_redraw()
 

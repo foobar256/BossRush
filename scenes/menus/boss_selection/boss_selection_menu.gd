@@ -8,6 +8,10 @@ signal boss_selected
 
 func _ready() -> void:
 	_refresh_boss_list()
+	var bg = get_node_or_null("ColorRect")
+	if bg:
+		bg.color = GameColors.BACKGROUND
+		bg.color.a = 0.9
 
 
 func _refresh_boss_list() -> void:

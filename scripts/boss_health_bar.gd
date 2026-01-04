@@ -4,16 +4,21 @@ extends Control
 @export var current_health: float = 200.0
 @export var max_shield: float = 0.0
 @export var current_shield: float = 0.0
-@export var bar_color: Color = Color(0.9, 0.1, 0.1, 1)
-@export var shield_color: Color = Color(0.1, 0.5, 0.9, 1)
-@export var back_color: Color = Color(0.12, 0.12, 0.12, 0.85)
-@export var outline_color: Color = Color(1, 1, 1, 1)
+@export var bar_color: Color = Color(0.8, 0.4, 0.4, 1)
+@export var shield_color: Color = Color(0.4, 0.6, 0.8, 1)
+@export var back_color: Color = Color(0.12, 0.12, 0.15, 0.85)
+@export var outline_color: Color = Color(0.9, 0.86, 0.8, 1)
 @export var outline_width: float = 2.0
 
 var _boss_healths: Dictionary = {}
 
 
 func _ready() -> void:
+	bar_color = GameColors.HEALTH
+	shield_color = GameColors.SHIELD
+	back_color = GameColors.BACKGROUND
+	back_color.a = 0.85
+	outline_color = GameColors.TEXT
 	add_to_group("boss_health_bar")
 	queue_redraw()
 

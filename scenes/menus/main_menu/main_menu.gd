@@ -60,6 +60,10 @@ func _ready() -> void:
 	super._ready()
 	_add_level_select_if_set()
 	_show_continue_if_set()
+	
+	var bg = get_node_or_null("BackgroundColor")
+	if bg:
+		bg.color = GameColors.BACKGROUND
 
 
 func _on_continue_game_button_pressed() -> void:
