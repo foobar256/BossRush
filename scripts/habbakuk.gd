@@ -33,7 +33,7 @@ func _ready() -> void:
 	call_deferred("_sync_boss_bar")
 	_velocity = Vector2.RIGHT.rotated(randf() * TAU) * speed
 	_setup_visuals()
-	
+
 	if body:
 		body.color = GameColors.HABBAKUK_BODY
 	var bridge = get_node_or_null("HullDetails/Bridge")

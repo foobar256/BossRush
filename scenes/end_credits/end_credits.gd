@@ -51,11 +51,11 @@ func _ready() -> void:
 	if OS.has_feature("web"):
 		exit_button.hide()
 	end_message_panel.hide()
-	
+
 	var bg = get_node_or_null("BackgroundColor")
 	if bg:
 		bg.color = GameColors.BACKGROUND
-		
+
 	super._ready()
 
 

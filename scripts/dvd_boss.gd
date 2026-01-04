@@ -62,7 +62,7 @@ func _ready() -> void:
 	health_bar_back_color.a = 0.85
 	health_bar_fill_color = GameColors.HEALTH
 	shield_bar_fill_color = GameColors.SHIELD
-	
+
 	add_to_group("enemies")
 	add_to_group("boss")
 	current_health = clamp(current_health, 0.0, max_health)

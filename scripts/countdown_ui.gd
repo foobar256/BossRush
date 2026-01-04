@@ -7,10 +7,12 @@ var _countdown_value: int = 3
 
 @onready var label: Label = $CenterContainer/Label
 
+
 func _ready() -> void:
 	if label:
 		label.add_theme_color_override("font_outline_color", GameColors.BACKGROUND)
 		label.add_theme_color_override("font_color", GameColors.TEXT)
+
 
 func start_countdown() -> void:
 	visible = true

@@ -8,6 +8,7 @@ extends Node2D
 var direction: Vector2 = Vector2.RIGHT
 var bounds: Rect2 = Rect2(0, 0, 1280, 720)
 
+
 func _ready() -> void:
 	color = GameColors.PROJECTILE_ENEMY
 

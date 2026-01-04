@@ -6,6 +6,7 @@ extends "res://scripts/enemy_projectile.gd"
 
 var _lifetime: float = 4.0
 
+
 func _ready() -> void:
 	color = GameColors.ROCKET
 
