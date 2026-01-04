@@ -522,9 +522,37 @@ func _on_boss_vector2_slider_changed(value: float, prop_name: String, component:
 			current_vec.y = value
 		boss.set(prop_name, current_vec)
 	_refresh_boss_visuals()
+	_sync_all_controls()
 
 
-func _on_player_vector2_slider_changed(value: float, prop_name: String, component: String) -> void:
+func _sync_all_controls() -> void:
+	_suppress_sync = true
+	if _boss != null:
+		for prop_name in _boss_property_controls:
+			var info = _boss_property_controls[prop_name]
+			var slider = info.get("slider")
+			var line_edit = info.get("label")
+			var value: float
+			
+			if info.has("component"): # Vector2 or Rect2 component
+				var base_prop = prop_name.split("_")[0]
+				var comp = info["component"]
+				var val = _boss.get(base_prop)
+				if val is Vector2:
+					value = val.x if comp == "x" else val.y
+				elif val is Rect2:
+					if comp == "x": value = val.position.x
+					elif comp == "y": value = val.position.y
+					elif comp == "width": value = val.size.x
+					elif comp == "height": value = val.size.y
+			else:
+				value = float(_boss.get(prop_name))
+			
+			if slider != null:
+				slider.value = value
+			if line_edit != null and not line_edit.has_focus():
+				line_edit.text = _format_value(value, info.get("is_int", false))
+	_suppress_sync = false
 	if _suppress_sync or _players.is_empty():
 		return
 	var control_key = "%s_%s" % [prop_name, component]
@@ -754,11 +782,10 @@ func _on_boss_slider_changed(value: float, prop_name: String) -> void:
 				_update_boss_speed(boss, value)
 		if line_edit != null and not line_edit.has_focus():
 			line_edit.text = _format_value(value, false)
-	if prop_name == "max_health" and _boss_property_controls.has("current_health"):
-		_update_boss_current_health_control()
 	if prop_name == "max_shield" and _boss_property_controls.has("current_shield"):
 		_update_boss_current_shield_control()
 	_refresh_boss_visuals()
+	_sync_all_controls()
 
 
 func _on_player_slider_changed(value: float, prop_name: String) -> void:
@@ -885,6 +912,7 @@ func _on_boss_rect2_slider_changed(value: float, prop_name: String, component: S
 		boss.set(prop_name, new_rect)
 
 	_refresh_boss_visuals()
+	_sync_all_controls()
 
 
 func _on_player_rect2_slider_changed(value: float, prop_name: String, component: String) -> void:

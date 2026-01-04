@@ -7,7 +7,17 @@ signal died
 @export var current_health: float = 200.0
 @export var max_shield: float = 100.0
 @export var current_shield: float = 100.0
-@export var boss_size: Vector2 = Vector2(160.0, 90.0)
+@export var boss_size: Vector2 = Vector2(160.0, 90.0):
+	set(value):
+		var old_value = boss_size
+		if value.x != old_value.x:
+			boss_size = Vector2(value.x, value.x * (90.0 / 160.0))
+		elif value.y != old_value.y:
+			boss_size = Vector2(value.y * (160.0 / 90.0), value.y)
+		else:
+			boss_size = value
+		_apply_visuals()
+		_update_health_bar()
 @export var speed: float = 320.0
 @export var bounds_node: NodePath
 @export var min_size: float = 30.0
