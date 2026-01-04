@@ -55,6 +55,7 @@ var _arena_status_label: Label = get_node("Panel/Margin/VBox/TabContainer/Arena/
 	"Panel/Margin/VBox/TabContainer/Arena/ArenaScroll/ArenaRows"
 )
 
+
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -67,6 +68,7 @@ func _ready() -> void:
 	# Defer the initial refresh to ensure scene is fully ready
 	call_deferred("_refresh_all")
 	_update_cursor_state()
+
 
 func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed(toggle_action):
@@ -85,10 +87,12 @@ func _process(_delta: float) -> void:
 		if _arenas.is_empty():
 			_refresh_arena()
 
+
 func _refresh_all() -> void:
 	_refresh_boss()
 	_refresh_player()
 	_refresh_arena()
+
 
 func _refresh_boss() -> void:
 	_bosses = _find_bosses()
@@ -101,6 +105,7 @@ func _refresh_boss() -> void:
 	_apply_boss_saved_config()
 	_build_boss_controls()
 
+
 func _refresh_player() -> void:
 	_players = _find_players()
 	_player = _players[0] if not _players.is_empty() else null
@@ -112,6 +117,7 @@ func _refresh_player() -> void:
 	_apply_player_saved_config()
 	_build_player_controls()
 
+
 func _refresh_arena() -> void:
 	_arenas = _find_arenas()
 	_arena = _arenas[0] if not _arenas.is_empty() else null
@@ -122,6 +128,7 @@ func _refresh_arena() -> void:
 	_arena_status_label.text = "Arenas: %d" % _arenas.size()
 	_apply_arena_saved_config()
 	_build_arena_controls()
+
 
 func _find_bosses() -> Array:
 	# Try multiple approaches to find boss nodes
@@ -148,6 +155,7 @@ func _find_bosses() -> Array:
 
 	return valid_bosses
 
+
 func _find_players() -> Array:
 	# Try multiple approaches to find player nodes
 
@@ -172,6 +180,7 @@ func _find_players() -> Array:
 		return found
 
 	return valid_players
+
 
 func _find_arenas() -> Array:
 	# Try multiple approaches to find arena nodes
@@ -222,6 +231,7 @@ func _find_arenas() -> Array:
 
 	return []
 
+
 func _find_nodes_with_rect2_property(root: Node, results: Array) -> void:
 	if root == null:
 		return
@@ -240,6 +250,7 @@ func _find_nodes_with_rect2_property(root: Node, results: Array) -> void:
 	for child in root.get_children():
 		_find_nodes_with_rect2_property(child, results)
 
+
 func _find_nodes_by_name(root: Node, name_part: String, results: Array) -> void:
 	if root == null:
 		return
@@ -248,20 +259,24 @@ func _find_nodes_by_name(root: Node, name_part: String, results: Array) -> void:
 	for child in root.get_children():
 		_find_nodes_by_name(child, name_part, results)
 
+
 func _clear_boss_controls() -> void:
 	_boss_property_controls.clear()
 	for child in _boss_rows.get_children():
 		child.queue_free()
+
 
 func _clear_player_controls() -> void:
 	_player_property_controls.clear()
 	for child in _player_rows.get_children():
 		child.queue_free()
 
+
 func _clear_arena_controls() -> void:
 	_arena_property_controls.clear()
 	for child in _arena_rows.get_children():
 		child.queue_free()
+
 
 func _build_boss_controls() -> void:
 	_clear_boss_controls()
@@ -273,6 +288,7 @@ func _build_boss_controls() -> void:
 			continue
 		_create_boss_property_control(prop)
 	_suppress_sync = false
+
 
 func _build_player_controls() -> void:
 	_clear_player_controls()
@@ -287,6 +303,7 @@ func _build_player_controls() -> void:
 		_create_player_property_control(prop)
 	_suppress_sync = false
 
+
 func _build_arena_controls() -> void:
 	_clear_arena_controls()
 	if _arena == null:
@@ -298,6 +315,7 @@ func _build_arena_controls() -> void:
 		_create_arena_property_control(prop)
 	_suppress_sync = false
 
+
 func _is_tweakable_property(prop: Dictionary) -> bool:
 	var usage: int = prop.get("usage", 0)
 	if (usage & PROPERTY_USAGE_EDITOR) == 0:
@@ -306,6 +324,7 @@ func _is_tweakable_property(prop: Dictionary) -> bool:
 		return false
 	var type: int = prop.get("type", TYPE_NIL)
 	return type == TYPE_INT or type == TYPE_FLOAT or type == TYPE_RECT2 or type == TYPE_VECTOR2
+
 
 func _create_boss_property_control(prop: Dictionary) -> void:
 	var prop_name: String = prop.get("name", "")
@@ -344,6 +363,7 @@ func _create_boss_property_control(prop: Dictionary) -> void:
 	}
 	slider.value_changed.connect(_on_boss_slider_changed.bind(prop_name))
 
+
 func _create_player_property_control(prop: Dictionary) -> void:
 	var prop_name: String = prop.get("name", "")
 	if prop_name == "":
@@ -380,6 +400,7 @@ func _create_player_property_control(prop: Dictionary) -> void:
 		"is_int": is_int,
 	}
 	slider.value_changed.connect(_on_player_slider_changed.bind(prop_name))
+
 
 func _create_vector2_property_control(prop: Dictionary, target_type: String) -> void:
 	var prop_name: String = prop.get("name", "")
@@ -458,6 +479,7 @@ func _create_vector2_property_control(prop: Dictionary, target_type: String) -> 
 	elif target_type == "player":
 		_player_rows.add_child(container)
 
+
 func _on_arena_vector2_slider_changed(value: float, prop_name: String, component: String) -> void:
 	if _suppress_sync or _arenas.is_empty():
 		return
@@ -478,6 +500,7 @@ func _on_arena_vector2_slider_changed(value: float, prop_name: String, component
 			current_vec.y = value
 		arena.set(prop_name, current_vec)
 	_refresh_arena_visuals()
+
 
 func _on_boss_vector2_slider_changed(value: float, prop_name: String, component: String) -> void:
 	if _suppress_sync or _bosses.is_empty():
@@ -500,6 +523,7 @@ func _on_boss_vector2_slider_changed(value: float, prop_name: String, component:
 		boss.set(prop_name, current_vec)
 	_refresh_boss_visuals()
 
+
 func _on_player_vector2_slider_changed(value: float, prop_name: String, component: String) -> void:
 	if _suppress_sync or _players.is_empty():
 		return
@@ -519,6 +543,7 @@ func _on_player_vector2_slider_changed(value: float, prop_name: String, componen
 		else:
 			current_vec.y = value
 		player.set(prop_name, current_vec)
+
 
 func _create_rect2_property_control(prop: Dictionary, target_type: String) -> void:
 	var prop_name: String = prop.get("name", "")
@@ -618,6 +643,7 @@ func _create_rect2_property_control(prop: Dictionary, target_type: String) -> vo
 	elif target_type == "player":
 		_player_rows.add_child(container)
 
+
 func _create_arena_property_control(prop: Dictionary) -> void:
 	var prop_name: String = prop.get("name", "")
 	if prop_name == "":
@@ -654,6 +680,7 @@ func _create_arena_property_control(prop: Dictionary) -> void:
 		"is_int": is_int,
 	}
 	slider.value_changed.connect(_on_arena_slider_changed.bind(prop_name))
+
 
 func _apply_slider_range(
 	slider: HSlider, prop: Dictionary, value: float, target_type: String
@@ -695,8 +722,10 @@ func _apply_slider_range(
 		slider.max_value = max(1.0, magnitude * 3.0)
 	slider.step = _default_step(prop)
 
+
 func _default_step(prop: Dictionary) -> float:
 	return 1.0 if prop.get("type", TYPE_FLOAT) == TYPE_INT else 0.01
+
 
 func _on_boss_slider_changed(value: float, prop_name: String) -> void:
 	if _suppress_sync or _bosses.is_empty():
@@ -731,6 +760,7 @@ func _on_boss_slider_changed(value: float, prop_name: String) -> void:
 		_update_boss_current_shield_control()
 	_refresh_boss_visuals()
 
+
 func _on_player_slider_changed(value: float, prop_name: String) -> void:
 	if _suppress_sync or _players.is_empty():
 		return
@@ -757,6 +787,7 @@ func _on_player_slider_changed(value: float, prop_name: String) -> void:
 	if prop_name == "max_health" and _player_property_controls.has("current_health"):
 		_update_player_current_health_control()
 
+
 func _on_arena_slider_changed(value: float, prop_name: String) -> void:
 	if _suppress_sync or _arenas.is_empty():
 		return
@@ -781,6 +812,7 @@ func _on_arena_slider_changed(value: float, prop_name: String) -> void:
 		if line_edit != null and not line_edit.has_focus():
 			line_edit.text = _format_value(value, false)
 	_refresh_arena_visuals()
+
 
 func _on_arena_rect2_slider_changed(value: float, prop_name: String, component: String) -> void:
 	if _suppress_sync or _arenas.is_empty():
@@ -818,6 +850,7 @@ func _on_arena_rect2_slider_changed(value: float, prop_name: String, component: 
 
 	_refresh_arena_visuals()
 
+
 func _on_boss_rect2_slider_changed(value: float, prop_name: String, component: String) -> void:
 	if _suppress_sync or _bosses.is_empty():
 		return
@@ -853,6 +886,7 @@ func _on_boss_rect2_slider_changed(value: float, prop_name: String, component: S
 
 	_refresh_boss_visuals()
 
+
 func _on_player_rect2_slider_changed(value: float, prop_name: String, component: String) -> void:
 	if _suppress_sync or _players.is_empty():
 		return
@@ -886,6 +920,7 @@ func _on_player_rect2_slider_changed(value: float, prop_name: String, component:
 
 		player.set(prop_name, new_rect)
 
+
 func _update_boss_current_health_control() -> void:
 	var info: Dictionary = _boss_property_controls.get("current_health", {})
 	var slider: HSlider = info.get("slider") as HSlider
@@ -902,6 +937,7 @@ func _update_boss_current_health_control() -> void:
 	slider.value = clamped
 	if line_edit != null and not line_edit.has_focus():
 		line_edit.text = _format_value(clamped, true)
+
 
 func _update_boss_current_shield_control() -> void:
 	var info: Dictionary = _boss_property_controls.get("current_shield", {})
@@ -920,6 +956,7 @@ func _update_boss_current_shield_control() -> void:
 	if line_edit != null and not line_edit.has_focus():
 		line_edit.text = _format_value(clamped, true)
 
+
 func _update_player_current_health_control() -> void:
 	var info: Dictionary = _player_property_controls.get("current_health", {})
 	var slider: HSlider = info.get("slider") as HSlider
@@ -937,6 +974,7 @@ func _update_player_current_health_control() -> void:
 	if line_edit != null and not line_edit.has_focus():
 		line_edit.text = _format_value(clamped, true)
 
+
 func _refresh_boss_visuals() -> void:
 	if _bosses.is_empty():
 		return
@@ -949,6 +987,7 @@ func _refresh_boss_visuals() -> void:
 			boss.call("_update_health_bar")
 		if boss.has_method("_sync_boss_bar"):
 			boss.call("_sync_boss_bar")
+
 
 func _refresh_arena_visuals() -> void:
 	if _arenas.is_empty():
@@ -975,8 +1014,10 @@ func _refresh_arena_visuals() -> void:
 						if player.has_property("bounds"):
 							player.bounds = arena_bounds
 
+
 func _format_value(value: float, is_int: bool) -> String:
 	return String.num(value, 0 if is_int else 2)
+
 
 func _pause_gameplay() -> void:
 	# Pause all gameplay nodes but keep UI nodes active
@@ -1012,14 +1053,17 @@ func _pause_gameplay() -> void:
 			elif node.name == "GameOverWindow":
 				node.process_mode = Node.PROCESS_MODE_PAUSABLE
 
+
 func _resume_gameplay() -> void:
 	# Resume all nodes
 	for node in get_tree().get_root().get_children():
 		node.process_mode = Node.PROCESS_MODE_INHERIT
 
+
 func _update_cursor_state() -> void:
 	_set_crosshair_enabled(not visible)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if visible else Input.MOUSE_MODE_HIDDEN
+
 
 func _set_crosshair_enabled(enabled: bool) -> void:
 	for node in get_tree().get_nodes_in_group("crosshair_cursor"):
@@ -1027,6 +1071,7 @@ func _set_crosshair_enabled(enabled: bool) -> void:
 			node.call("set_enabled", enabled)
 		else:
 			node.visible = enabled
+
 
 func _get_max_boss_health() -> float:
 	var max_value := 1.0
@@ -1036,6 +1081,7 @@ func _get_max_boss_health() -> float:
 		max_value = max(max_value, float(boss.max_health))
 	return max_value
 
+
 func _get_max_boss_shield() -> float:
 	var max_value := 1.0
 	for boss in _bosses:
@@ -1044,6 +1090,7 @@ func _get_max_boss_shield() -> float:
 		max_value = max(max_value, float(boss.max_shield))
 	return max_value
 
+
 func _get_max_player_health() -> float:
 	var max_value := 1.0
 	for player in _players:
@@ -1051,6 +1098,7 @@ func _get_max_player_health() -> float:
 			continue
 		max_value = max(max_value, float(player.max_health))
 	return max_value
+
 
 func _update_boss_speed(boss: Node, new_speed: float) -> void:
 	if boss == null or not is_instance_valid(boss):
@@ -1063,16 +1111,19 @@ func _update_boss_speed(boss: Node, new_speed: float) -> void:
 		boss.set("speed", new_speed)
 		boss.call("set_velocity", direction.normalized() * new_speed)
 
+
 func _on_boss_save_pressed() -> void:
 	if _boss == null:
 		return
 	var data := _collect_boss_values(_boss)
 	_write_boss_config(data)
 
+
 func _on_boss_reset_pressed() -> void:
 	_on_boss_save_pressed()
 	_resume_gameplay()
 	get_tree().reload_current_scene()
+
 
 func _on_player_save_pressed() -> void:
 	if _player == null:
@@ -1080,10 +1131,12 @@ func _on_player_save_pressed() -> void:
 	var data := _collect_player_values(_player)
 	_write_player_config(data)
 
+
 func _on_player_reset_pressed() -> void:
 	_on_player_save_pressed()
 	_resume_gameplay()
 	get_tree().reload_current_scene()
+
 
 func _on_arena_save_pressed() -> void:
 	if _arena == null:
@@ -1091,158 +1144,117 @@ func _on_arena_save_pressed() -> void:
 	var data := _collect_arena_values(_arena)
 	_write_arena_config(data)
 
+
 func _on_arena_reset_pressed() -> void:
 	_on_arena_save_pressed()
 	_resume_gameplay()
 	get_tree().reload_current_scene()
 
-func _apply_boss_saved_config() -> void:
 
+func _apply_boss_saved_config() -> void:
 	_apply_generic_config(_bosses, _read_boss_config(), "boss")
 
-func _apply_player_saved_config() -> void:
 
+func _apply_player_saved_config() -> void:
 	_apply_generic_config(_players, _read_player_config(), "player")
 
-func _apply_arena_saved_config() -> void:
 
+func _apply_arena_saved_config() -> void:
 	_apply_generic_config(_arenas, _read_arena_config(), "arena")
 
+
 func _apply_generic_config(nodes: Array, data: Dictionary, type: String) -> void:
-
 	if data.is_empty():
-
 		return
 
 	for node in nodes:
-
 		if not is_instance_valid(node):
-
 			continue
 
 		for key in data.keys():
-
 			if not node.has_method("set"):
-
 				continue
 
 			if node.get(key) == null:
-
 				continue
 
 			var value = data[key]
 
 			if (
-
 				value is Dictionary
-
 				and value.has("x")
-
 				and value.has("y")
-
 				and value.has("width")
-
 				and value.has("height")
-
 			):
-
 				node.set(
-
 					key,
-
 					Rect2(
-
 						float(value["x"]),
-
 						float(value["y"]),
-
 						float(value["width"]),
-
 						float(value["height"])
-
 					)
-
 				)
 
 			elif (
-
-				value is Dictionary
-
-				and value.has("x")
-
-				and value.has("y")
-
-				and not value.has("width")
-
+				value is Dictionary and value.has("x") and value.has("y") and not value.has("width")
 			):
-
 				node.set(key, Vector2(float(value["x"]), float(value["y"])))
 
 			else:
-
 				node.set(key, value)
 
 				if type == "boss" and key == "speed":
-
 					_update_boss_speed(node, float(value))
 
-func _collect_boss_values(boss_node: Node) -> Dictionary:
 
+func _collect_boss_values(boss_node: Node) -> Dictionary:
 	return _collect_generic_values(boss_node)
 
-func _collect_player_values(player_node: Node) -> Dictionary:
 
+func _collect_player_values(player_node: Node) -> Dictionary:
 	return _collect_generic_values(player_node)
 
-func _collect_arena_values(arena_node: Node) -> Dictionary:
 
+func _collect_arena_values(arena_node: Node) -> Dictionary:
 	return _collect_generic_values(arena_node)
 
-func _collect_generic_values(node: Node) -> Dictionary:
 
+func _collect_generic_values(node: Node) -> Dictionary:
 	var values: Dictionary = {}
 
 	for prop in node.get_property_list():
-
 		if not _is_tweakable_property(prop):
-
 			continue
 
 		var prop_name: String = prop.get("name", "")
 
 		if prop_name == "" or prop_name.begins_with("current_"):
-
 			continue
 
 		var type: int = prop.get("type", TYPE_NIL)
 
 		if type == TYPE_RECT2:
-
 			var rect_value: Rect2 = node.get(prop_name)
 
 			values[prop_name] = {
-
 				"x": rect_value.position.x,
-
 				"y": rect_value.position.y,
-
 				"width": rect_value.size.x,
-
 				"height": rect_value.size.y
-
 			}
 
 		elif type == TYPE_VECTOR2:
-
 			var vec_value: Vector2 = node.get(prop_name)
 
 			values[prop_name] = {"x": vec_value.x, "y": vec_value.y}
 
 		else:
-
 			values[prop_name] = node.get(prop_name)
 
 	return values
+
 
 func _write_boss_config(values: Dictionary) -> void:
 	var config := ConfigFile.new()
@@ -1257,6 +1269,7 @@ func _write_boss_config(values: Dictionary) -> void:
 	else:
 		print("Boss config saved to: " + boss_config_path)
 
+
 func _write_player_config(values: Dictionary) -> void:
 	var config := ConfigFile.new()
 	for key in values.keys():
@@ -1264,6 +1277,7 @@ func _write_player_config(values: Dictionary) -> void:
 	var err := config.save("user://player_config.cfg")
 	if err != OK:
 		push_warning("Failed to write player config")
+
 
 func _write_arena_config(values: Dictionary) -> void:
 	# Save to the actual arena config file
@@ -1299,6 +1313,7 @@ func _write_arena_config(values: Dictionary) -> void:
 	else:
 		print("Arena config saved to: " + arena_config_path)
 
+
 func _read_boss_config() -> Dictionary:
 	var config := ConfigFile.new()
 	var err := config.load(boss_config_path)
@@ -1324,6 +1339,7 @@ func _read_boss_config() -> Dictionary:
 			result[key] = value
 	return result
 
+
 func _read_player_config() -> Dictionary:
 	var config := ConfigFile.new()
 	var err := config.load("user://player_config.cfg")
@@ -1335,6 +1351,7 @@ func _read_player_config() -> Dictionary:
 	for key in config.get_section_keys("player"):
 		result[key] = config.get_value("player", key)
 	return result
+
 
 func _read_arena_config() -> Dictionary:
 	# Read from the actual arena config file
@@ -1362,6 +1379,7 @@ func _read_arena_config() -> Dictionary:
 			result[key] = value
 	return result
 
+
 func _create_value_line_edit(value: float, is_int: bool, slider: HSlider) -> LineEdit:
 	var line_edit := LineEdit.new()
 	line_edit.custom_minimum_size = Vector2(72, 0)
@@ -1374,14 +1392,17 @@ func _create_value_line_edit(value: float, is_int: bool, slider: HSlider) -> Lin
 
 	return line_edit
 
+
 func _on_value_edit_submitted(
 	new_text: String, slider: HSlider, is_int: bool, line_edit: LineEdit
 ) -> void:
 	_apply_text_value(new_text, slider, is_int, line_edit)
 	line_edit.release_focus()
 
+
 func _on_value_focus_exited(line_edit: LineEdit, slider: HSlider, is_int: bool) -> void:
 	_apply_text_value(line_edit.text, slider, is_int, line_edit)
+
 
 func _apply_text_value(text: String, slider: HSlider, is_int: bool, line_edit: LineEdit) -> void:
 	if not text.is_valid_float():
