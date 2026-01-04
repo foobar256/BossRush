@@ -22,7 +22,14 @@ func test_boss_config_write_and_read():
 		tests_failed += 1
 		return
 
-	var instance = debug_menu_scene.instantiate()
+	var layer = debug_menu_scene.instantiate()
+	var instance = layer.get_node("DebugMenu")
+	if instance == null:
+		test_results.append("FAIL: Could not find DebugMenu node in layer")
+		tests_failed += 1
+		layer.queue_free()
+		return
+	
 	var test_path := "user://test_boss_config.cfg"
 	instance.boss_config_path = test_path
 	_cleanup_test_file(test_path)
@@ -52,7 +59,7 @@ func test_boss_config_write_and_read():
 			tests_failed += 1
 
 	_cleanup_test_file(test_path)
-	instance.queue_free()
+	layer.queue_free()
 
 
 func _cleanup_test_file(path: String) -> void:

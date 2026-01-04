@@ -58,7 +58,7 @@ var _arena_status_label: Label = get_node("Panel/Margin/VBox/TabContainer/Arena/
 
 func _ready() -> void:
 	visible = false
-	process_mode = Node.PROCESS_MODE_PAUSABLE
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_boss_save_button.pressed.connect(_on_boss_save_pressed)
 	_boss_reset_button.pressed.connect(_on_boss_reset_pressed)
 	_player_save_button.pressed.connect(_on_player_save_pressed)
@@ -525,34 +525,7 @@ func _on_boss_vector2_slider_changed(value: float, prop_name: String, component:
 	_sync_all_controls()
 
 
-func _sync_all_controls() -> void:
-	_suppress_sync = true
-	if _boss != null:
-		for prop_name in _boss_property_controls:
-			var info = _boss_property_controls[prop_name]
-			var slider = info.get("slider")
-			var line_edit = info.get("label")
-			var value: float
-			
-			if info.has("component"): # Vector2 or Rect2 component
-				var base_prop = prop_name.split("_")[0]
-				var comp = info["component"]
-				var val = _boss.get(base_prop)
-				if val is Vector2:
-					value = val.x if comp == "x" else val.y
-				elif val is Rect2:
-					if comp == "x": value = val.position.x
-					elif comp == "y": value = val.position.y
-					elif comp == "width": value = val.size.x
-					elif comp == "height": value = val.size.y
-			else:
-				value = float(_boss.get(prop_name))
-			
-			if slider != null:
-				slider.value = value
-			if line_edit != null and not line_edit.has_focus():
-				line_edit.text = _format_value(value, info.get("is_int", false))
-	_suppress_sync = false
+func _on_player_vector2_slider_changed(value: float, prop_name: String, component: String) -> void:
 	if _suppress_sync or _players.is_empty():
 		return
 	var control_key = "%s_%s" % [prop_name, component]
@@ -571,6 +544,48 @@ func _sync_all_controls() -> void:
 		else:
 			current_vec.y = value
 		player.set(prop_name, current_vec)
+	_sync_all_controls()
+
+
+func _sync_all_controls() -> void:
+	_suppress_sync = true
+	_sync_target_controls(_boss, _boss_property_controls)
+	_sync_target_controls(_player, _player_property_controls)
+	_sync_target_controls(_arena, _arena_property_controls)
+	_suppress_sync = false
+
+
+func _sync_target_controls(target: Node, controls: Dictionary) -> void:
+	if target == null:
+		return
+	for prop_name in controls:
+		var info = controls[prop_name]
+		var slider = info.get("slider")
+		var line_edit = info.get("label")
+		var value: float
+
+		if info.has("component"):  # Vector2 or Rect2 component
+			var base_prop = prop_name.split("_")[0]
+			var comp = info["component"]
+			var val = target.get(base_prop)
+			if val is Vector2:
+				value = val.x if comp == "x" else val.y
+			elif val is Rect2:
+				if comp == "x":
+					value = val.position.x
+				elif comp == "y":
+					value = val.position.y
+				elif comp == "width":
+					value = val.size.x
+				elif comp == "height":
+					value = val.size.y
+		else:
+			value = float(target.get(prop_name))
+
+		if slider != null:
+			slider.value = value
+		if line_edit != null and not line_edit.has_focus():
+			line_edit.text = _format_value(value, info.get("is_int", false))
 
 
 func _create_rect2_property_control(prop: Dictionary, target_type: String) -> void:
@@ -1048,44 +1063,11 @@ func _format_value(value: float, is_int: bool) -> String:
 
 
 func _pause_gameplay() -> void:
-	# Pause all gameplay nodes but keep UI nodes active
-	for node in get_tree().get_root().get_children():
-		if node is CanvasLayer:
-			# Skip the debug menu layer itself
-			if node.name == "DebugMenuLayer":
-				continue
-			# Set process mode for UI layers to PAUSABLE so they still work
-			node.process_mode = Node.PROCESS_MODE_PAUSABLE
-		elif node is Node2D:
-			# Pause gameplay nodes
-			node.process_mode = Node.PROCESS_MODE_DISABLED
-		elif node is Node:
-			# Check if it's a gameplay-related node
-			if (
-				node.name
-				in [
-					"Player",
-					"DVDBoss",
-					"Projectiles",
-					"BossHealthBar",
-					"PlayerHealthBar",
-					"Bounds",
-					"Camera2D"
-				]
-			):
-				node.process_mode = Node.PROCESS_MODE_DISABLED
-			# Keep pause menu controller active
-			elif node.name == "PauseMenuController":
-				node.process_mode = Node.PROCESS_MODE_PAUSABLE
-			# Keep game over window active
-			elif node.name == "GameOverWindow":
-				node.process_mode = Node.PROCESS_MODE_PAUSABLE
+	get_tree().paused = true
 
 
 func _resume_gameplay() -> void:
-	# Resume all nodes
-	for node in get_tree().get_root().get_children():
-		node.process_mode = Node.PROCESS_MODE_INHERIT
+	get_tree().paused = false
 
 
 func _update_cursor_state() -> void:
