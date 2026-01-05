@@ -32,52 +32,64 @@ func create_arena(arena_name: String) -> bool:
 		arena_failed.emit("Failed to load arena config: " + config_path)
 		return false
 
-	# Parse arena data
+	var error_msg := ""
 	_current_arena_data = {}
 
 	# Get arena bounds
 	if config.has_section_key("arena", "bounds"):
-		var loaded_bounds: Rect2 = config.get_value("arena", "bounds")
-		# Always center arena bounds around the world origin.
-		loaded_bounds.position = -loaded_bounds.size * 0.5
-		_current_arena_data.bounds = loaded_bounds
+		var loaded_bounds = _parse_value(config.get_value("arena", "bounds"))
+		if loaded_bounds is Rect2:
+			# Always center arena bounds around the world origin.
+			loaded_bounds.position = -loaded_bounds.size * 0.5
+			_current_arena_data.bounds = loaded_bounds
+		else:
+			error_msg = "Invalid bounds type in arena config"
 	else:
-		var fallback_bounds := Rect2(0, 0, 1280, 720)
-		fallback_bounds.position = -fallback_bounds.size * 0.5
-		_current_arena_data.bounds = fallback_bounds  # Default fallback
+		error_msg = "Missing [arena] bounds in config"
 
-	# Get arena visuals
-	if config.has_section_key("arena", "line_color"):
-		_current_arena_data.line_color = config.get_value("arena", "line_color")
-	else:
-		_current_arena_data.line_color = Color(0.4, 0.4, 0.5, 1)
+	if error_msg == "":
+		# Get arena visuals
+		_current_arena_data.line_color = config.get_value(
+			"arena", "line_color", Color(0.4, 0.4, 0.5, 1)
+		)
+		_current_arena_data.line_width = config.get_value("arena", "line_width", 2.0)
 
-	if config.has_section_key("arena", "line_width"):
-		_current_arena_data.line_width = config.get_value("arena", "line_width")
-	else:
-		_current_arena_data.line_width = 2.0
+		# Get player spawn
+		if config.has_section_key("player", "spawn_position"):
+			_player_spawn = _parse_value(config.get_value("player", "spawn_position"))
+			if not _player_spawn is Vector2:
+				error_msg = "Invalid player spawn_position in config"
+		else:
+			error_msg = "Missing [player] spawn_position in config"
 
-	# Get player spawn
-	if config.has_section_key("player", "spawn_position"):
-		_player_spawn = config.get_value("player", "spawn_position")
-	else:
-		_player_spawn = Vector2(640, 360)  # Center as fallback
+	if error_msg == "":
+		# Get boss spawn
+		if config.has_section_key("boss", "spawn_position"):
+			var boss_spawn = _parse_value(config.get_value("boss", "spawn_position"))
+			if boss_spawn is Vector2:
+				_boss_spawns = [boss_spawn]
+			else:
+				error_msg = "Invalid boss spawn_position in config"
+		else:
+			error_msg = "Missing [boss] spawn_position in config"
 
-	# Get boss spawn
-	if config.has_section_key("boss", "spawn_position"):
-		var boss_spawn = config.get_value("boss", "spawn_position")
-		_boss_spawns = [boss_spawn]
-	else:
-		_boss_spawns = []
+	if error_msg == "":
+		# Get boss scene and properties
+		if not config.has_section("boss") or not config.has_section_key("boss", "scene"):
+			error_msg = "Missing [boss] section or scene path in config"
+		else:
+			_current_arena_data.boss_properties = {}
+			for key in config.get_section_keys("boss"):
+				if key == "scene":
+					_current_arena_data.boss_scene = config.get_value("boss", "scene")
+				elif key != "spawn_position":
+					_current_arena_data.boss_properties[key] = _parse_value(
+						config.get_value("boss", key)
+					)
 
-	# Get boss scene and properties
-	_current_arena_data.boss_properties = {}
-	if config.has_section("boss"):
-		for key in config.get_section_keys("boss"):
-			if key == "scene":
-				_current_arena_data.boss_scene = config.get_value("boss", "scene")
-			elif key != "spawn_position":
-				_current_arena_data.boss_properties[key] = config.get_value("boss", key)
+	if error_msg != "":
+		arena_failed.emit(error_msg)
+		return false
 
 	# Create the visual bounds
 	_create_bounds_visual()
@@ -86,6 +98,16 @@ func create_arena(arena_name: String) -> bool:
 	arena_created.emit(_current_arena_data)
 
 	return true
+
+
+func _parse_value(value: Variant) -> Variant:
+	if value is Dictionary and value.has("x") and value.has("y"):
+		if value.has("width") and value.has("height"):
+			return Rect2(
+				float(value["x"]), float(value["y"]), float(value["width"]), float(value["height"])
+			)
+		return Vector2(float(value["x"]), float(value["y"]))
+	return value
 
 
 ## Get the player spawn position for the current arena
@@ -157,3 +179,11 @@ func get_bounds_visual() -> Node2D:
 ## Get current arena data
 func get_arena_data() -> Dictionary:
 	return _current_arena_data.duplicate()
+
+
+## Get the path to the current arena's config file
+func get_current_config_path() -> String:
+	var arena_name = GameState.get_selected_arena()
+	if arena_name == "":
+		arena_name = "habbakuk_arena"
+	return default_arena_path + arena_name + ".cfg"

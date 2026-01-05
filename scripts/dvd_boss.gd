@@ -20,6 +20,7 @@ signal died
 		_update_health_bar()
 @export var speed: float = 320.0
 @export var bounds_node: NodePath
+@export_range(0, 5, 1) var max_splits: int = 1
 @export var min_size: float = 30.0
 @export var split_scale: float = 0.5
 @export var split_offset: float = 28.0
@@ -94,7 +95,7 @@ func take_damage(amount: float) -> void:
 	emit_signal("health_changed", current_health, max_health)
 	_sync_boss_bar()
 	_update_health_bar()
-	if not _has_split and current_health <= max_health * 0.5:
+	if not _has_split and max_splits > 0 and current_health <= max_health * 0.5:
 		if min(boss_size.x, boss_size.y) * split_scale >= min_size:
 			_split()
 			return
@@ -274,6 +275,7 @@ func _split() -> void:
 		child.current_health = new_max_health
 		child.max_shield = max_shield * split_scale
 		child.current_shield = 0.0
+		child.max_splits = max_splits - 1
 		child.speed = speed
 		if _is_combat_active:
 			child.start_combat()

@@ -38,7 +38,7 @@ This project now has automated tests in the `tests/` directory. The test framewo
 - **Documentation**: `tests/README.md` - Complete testing documentation
 
 ### Running Tests
-- **Headless mode**: `godot --headless tests/test_runner.tscn`
+- **Headless mode**: `godot --headless --quit tests/test_runner.tscn` (Always use `--quit` to avoid stalling)
 - **Pre-commit hook**: Tests run automatically when committing (see `scripts/git-hooks/pre-commit`)
 
 ### When to Write Tests

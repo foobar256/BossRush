@@ -89,9 +89,16 @@ func _process(_delta: float) -> void:
 
 
 func _refresh_all() -> void:
+	_update_config_paths()
 	_refresh_boss()
 	_refresh_player()
 	_refresh_arena()
+
+
+func _update_config_paths() -> void:
+	var arena_manager = get_tree().get_first_node_in_group("arena_manager")
+	if arena_manager != null and arena_manager.has_method("get_current_config_path"):
+		boss_config_path = arena_manager.get_current_config_path()
 
 
 func _refresh_boss() -> void:

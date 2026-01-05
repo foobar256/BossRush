@@ -17,9 +17,12 @@ func _ready() -> void:
 		var arena_name = GameState.get_selected_arena()
 		if arena_name == "":
 			arena_name = "habbakuk_arena"
-		_arena_manager.create_arena(arena_name)
-		# Wait a frame for arena to be created, then spawn boss and set player position
-		call_deferred("_setup_arena_elements")
+		if _arena_manager.create_arena(arena_name):
+			# Wait a frame for arena to be created, then spawn boss and set player position
+			call_deferred("_setup_arena_elements")
+		else:
+			push_error("MainGame: Failed to create arena '" + arena_name + "'. Returning to menu.")
+			get_tree().change_scene_to_file("res://scenes/menus/main_menu/main_menu.tscn")
 
 	if _player != null and _player.has_signal("died"):
 		_player.died.connect(_on_player_died)
