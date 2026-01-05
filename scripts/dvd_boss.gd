@@ -187,7 +187,9 @@ func _apply_visuals() -> void:
 		label.text = text
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.position = Vector2(-boss_size.x * 0.5, -boss_size.y * 0.5 + (boss_size.y * label_vertical_bias))
+		label.position = Vector2(
+			-boss_size.x * 0.5, -boss_size.y * 0.5 + (boss_size.y * label_vertical_bias)
+		)
 		label.size = boss_size
 		var label_settings := LabelSettings.new()
 		label_settings.font = font

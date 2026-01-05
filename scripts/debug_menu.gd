@@ -372,14 +372,14 @@ func _create_boss_size_control(prop: Dictionary) -> void:
 	var prop_name: String = prop.get("name", "")
 	var vec_value: Vector2 = _boss.get(prop_name)
 	var value: float = vec_value.x
-	
+
 	var row: HBoxContainer = HBoxContainer.new()
 	row.name = "Row_%s" % prop_name
 	var label: Label = Label.new()
 	label.text = prop_name + " (width)"
 	label.custom_minimum_size = Vector2(140, 0)
 	row.add_child(label)
-	
+
 	var slider: HSlider = HSlider.new()
 	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	slider.min_value = 10.0
@@ -387,11 +387,11 @@ func _create_boss_size_control(prop: Dictionary) -> void:
 	slider.step = 1.0
 	slider.value = value
 	row.add_child(slider)
-	
+
 	var value_line_edit: LineEdit = _create_value_line_edit(value, true, slider)
 	row.add_child(value_line_edit)
 	_boss_rows.add_child(row)
-	
+
 	_boss_property_controls[prop_name] = {
 		"slider": slider,
 		"label": value_line_edit,
