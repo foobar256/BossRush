@@ -7,6 +7,8 @@ extends Control
 @export var outline_color: Color = Color(0.9, 0.86, 0.8, 1)
 @export var outline_width: float = 2.0
 
+@onready var health_label: Label = $"../HealthLabel"
+
 
 func _ready() -> void:
 	bar_color = GameColors.PLAYER_HEALTH
@@ -14,13 +16,20 @@ func _ready() -> void:
 	back_color.a = 0.85
 	outline_color = GameColors.TEXT
 	add_to_group("player_bar")
+	_update_label()
 	queue_redraw()
 
 
 func set_health(current: float, max_value: float) -> void:
 	max_health = max_value
 	current_health = clamp(current, 0.0, max_health)
+	_update_label()
 	queue_redraw()
+
+
+func _update_label() -> void:
+	if health_label:
+		health_label.text = str(round(current_health)) + " / " + str(round(max_health))
 
 
 func _draw() -> void:
