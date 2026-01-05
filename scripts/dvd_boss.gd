@@ -26,6 +26,7 @@ signal died
 @export var box_color: Color = Color(0.18, 0.18, 0.22, 1)
 @export var text: String = "DVD"
 @export var text_color: Color = Color(0.9, 0.86, 0.8, 1)
+@export var label_vertical_bias: float = -0.05
 @export var font: Font = preload("res://assets/fonts/SourGummy/SourGummy-Bold.ttf")
 @export var texture: Texture2D
 @export var boss_scene: PackedScene
@@ -186,7 +187,7 @@ func _apply_visuals() -> void:
 		label.text = text
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.position = -boss_size * 0.5
+		label.position = Vector2(-boss_size.x * 0.5, -boss_size.y * 0.5 + (boss_size.y * label_vertical_bias))
 		label.size = boss_size
 		var label_settings := LabelSettings.new()
 		label_settings.font = font

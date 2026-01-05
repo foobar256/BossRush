@@ -336,6 +336,10 @@ func _create_boss_property_control(prop: Dictionary) -> void:
 		_create_rect2_property_control(prop, "boss")
 		return
 
+	if prop_name == "boss_size":
+		_create_boss_size_control(prop)
+		return
+
 	if type == TYPE_VECTOR2:
 		_create_vector2_property_control(prop, "boss")
 		return
@@ -362,6 +366,38 @@ func _create_boss_property_control(prop: Dictionary) -> void:
 		"is_int": is_int,
 	}
 	slider.value_changed.connect(_on_boss_slider_changed.bind(prop_name))
+
+
+func _create_boss_size_control(prop: Dictionary) -> void:
+	var prop_name: String = prop.get("name", "")
+	var vec_value: Vector2 = _boss.get(prop_name)
+	var value: float = vec_value.x
+	
+	var row: HBoxContainer = HBoxContainer.new()
+	row.name = "Row_%s" % prop_name
+	var label: Label = Label.new()
+	label.text = prop_name + " (width)"
+	label.custom_minimum_size = Vector2(140, 0)
+	row.add_child(label)
+	
+	var slider: HSlider = HSlider.new()
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	slider.min_value = 10.0
+	slider.max_value = max(100.0, value * 3.0)
+	slider.step = 1.0
+	slider.value = value
+	row.add_child(slider)
+	
+	var value_line_edit: LineEdit = _create_value_line_edit(value, true, slider)
+	row.add_child(value_line_edit)
+	_boss_rows.add_child(row)
+	
+	_boss_property_controls[prop_name] = {
+		"slider": slider,
+		"label": value_line_edit,
+		"is_int": true,
+	}
+	slider.value_changed.connect(_on_boss_size_slider_changed.bind(prop_name))
 
 
 func _create_player_property_control(prop: Dictionary) -> void:
@@ -521,6 +557,26 @@ func _on_boss_vector2_slider_changed(value: float, prop_name: String, component:
 		else:
 			current_vec.y = value
 		boss.set(prop_name, current_vec)
+	_refresh_boss_visuals()
+	_sync_all_controls()
+
+
+func _on_boss_size_slider_changed(value: float, prop_name: String) -> void:
+	if _suppress_sync or _bosses.is_empty():
+		return
+	if not _boss_property_controls.has(prop_name):
+		return
+	var info: Dictionary = _boss_property_controls[prop_name]
+	var line_edit: LineEdit = info.get("label") as LineEdit
+	if line_edit != null and not line_edit.has_focus():
+		line_edit.text = _format_value(value, true)
+	for boss in _bosses:
+		if not is_instance_valid(boss):
+			continue
+		var current_size: Vector2 = boss.get(prop_name)
+		current_size.x = value
+		# The setter in dvd_boss.gd will handle the aspect ratio adjustment for Y
+		boss.set(prop_name, current_size)
 	_refresh_boss_visuals()
 	_sync_all_controls()
 
