@@ -70,8 +70,9 @@ func _ready() -> void:
 	_update_cursor_state()
 
 
-func _process(_delta: float) -> void:
-	if Input.is_action_just_pressed(toggle_action):
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed(toggle_action):
+		print("Debug toggle action detected via _input: ", toggle_action)
 		visible = not visible
 		if visible:
 			_refresh_all()
@@ -79,6 +80,9 @@ func _process(_delta: float) -> void:
 		else:
 			_resume_gameplay()
 		_update_cursor_state()
+
+
+func _process(_delta: float) -> void:
 	if visible:
 		if _bosses.is_empty():
 			_refresh_boss()
@@ -330,7 +334,13 @@ func _is_tweakable_property(prop: Dictionary) -> bool:
 	if (usage & PROPERTY_USAGE_SCRIPT_VARIABLE) == 0:
 		return false
 	var type: int = prop.get("type", TYPE_NIL)
-	return type == TYPE_INT or type == TYPE_FLOAT or type == TYPE_RECT2 or type == TYPE_VECTOR2
+	return (
+		type == TYPE_INT
+		or type == TYPE_FLOAT
+		or type == TYPE_RECT2
+		or type == TYPE_VECTOR2
+		or type == TYPE_BOOL
+	)
 
 
 func _create_boss_property_control(prop: Dictionary) -> void:
@@ -349,6 +359,21 @@ func _create_boss_property_control(prop: Dictionary) -> void:
 
 	if type == TYPE_VECTOR2:
 		_create_vector2_property_control(prop, "boss")
+		return
+
+	if type == TYPE_BOOL:
+		var row: HBoxContainer = HBoxContainer.new()
+		row.name = "Row_%s" % prop_name
+		var label: Label = Label.new()
+		label.text = prop_name
+		label.custom_minimum_size = Vector2(140, 0)
+		row.add_child(label)
+		var check: CheckBox = CheckBox.new()
+		check.button_pressed = _boss.get(prop_name)
+		check.toggled.connect(_on_boss_checkbox_toggled.bind(prop_name))
+		row.add_child(check)
+		_boss_rows.add_child(row)
+		_boss_property_controls[prop_name] = {"type": type, "control": check}
 		return
 
 	var value: float = float(_boss.get(prop_name))
@@ -419,6 +444,21 @@ func _create_player_property_control(prop: Dictionary) -> void:
 
 	if type == TYPE_VECTOR2:
 		_create_vector2_property_control(prop, "player")
+		return
+
+	if type == TYPE_BOOL:
+		var row: HBoxContainer = HBoxContainer.new()
+		row.name = "Row_%s" % prop_name
+		var label: Label = Label.new()
+		label.text = prop_name
+		label.custom_minimum_size = Vector2(140, 0)
+		row.add_child(label)
+		var check: CheckBox = CheckBox.new()
+		check.button_pressed = _player.get(prop_name)
+		check.toggled.connect(_on_player_checkbox_toggled.bind(prop_name))
+		row.add_child(check)
+		_player_rows.add_child(row)
+		_player_property_controls[prop_name] = {"type": type, "control": check}
 		return
 
 	var value: float = float(_player.get(prop_name))
@@ -864,6 +904,26 @@ func _on_boss_slider_changed(value: float, prop_name: String) -> void:
 		_update_boss_current_shield_control()
 	_refresh_boss_visuals()
 	_sync_all_controls()
+
+
+func _on_boss_checkbox_toggled(button_pressed: bool, prop_name: String) -> void:
+	if _suppress_sync or _bosses.is_empty():
+		return
+	for boss in _bosses:
+		if is_instance_valid(boss):
+			boss.set(prop_name, button_pressed)
+			if boss.has_method("queue_redraw"):
+				boss.queue_redraw()
+
+
+func _on_player_checkbox_toggled(button_pressed: bool, prop_name: String) -> void:
+	if _suppress_sync or _players.is_empty():
+		return
+	for player in _players:
+		if is_instance_valid(player):
+			player.set(prop_name, button_pressed)
+			if player.has_method("queue_redraw"):
+				player.queue_redraw()
 
 
 func _on_player_slider_changed(value: float, prop_name: String) -> void:

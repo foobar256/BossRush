@@ -42,7 +42,7 @@ This project now has automated tests in the `tests/` directory. The test framewo
 - **Pre-commit hook**: Tests run automatically when committing (see `scripts/git-hooks/pre-commit`)
 
 ### When to Write Tests
-**Always create automated tests when making changes if it's a good idea to do so.** This includes:
+**Add new test when applicable.** This includes:
 - New features or functionality
 - Bug fixes (add regression tests)
 - UI components and window systems

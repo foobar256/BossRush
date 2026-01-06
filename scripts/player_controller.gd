@@ -3,8 +3,11 @@ extends Node2D
 signal died
 
 @export var move_speed: float = 220.0
-@export var radius: float = 6.0
-@export var dot_color: Color = Color(0.9, 0.86, 0.8, 1)
+@export var radius: float = 48.0
+@export var dot_color: Color = Color.WHITE
+@export var outline_color: Color = Color.BLACK
+@export var outline_thickness: float = 6.0
+@export var show_debug_hitbox: bool = false
 @export var projectile_scene: PackedScene
 @export var projectile_speed: float = 650.0
 @export var projectile_damage: float = 10.0
@@ -33,10 +36,15 @@ var _arena_manager: Node2D = null
 @onready var _projectile_parent: Node = _find_projectile_parent()
 
 
+var _sprite: Sprite2D
+
+
 func _ready() -> void:
-	dot_color = GameColors.TEXT
+	dot_color = Color.WHITE
 	add_to_group("player")
 	current_health = clamp(current_health, 0.0, max_health)
+
+	_setup_player_sprite()
 
 	# Find arena manager
 	_arena_manager = get_tree().get_first_node_in_group("arena_manager")
@@ -108,7 +116,16 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, radius, dot_color)
+	# Center the arc on the radius so it overlaps the image edge by half the thickness
+	draw_arc(Vector2.ZERO, radius, 0, TAU, 128, outline_color, outline_thickness, true)
+	
+	if show_debug_hitbox:
+		# Draw hitbox in red on top
+		draw_arc(Vector2.ZERO, radius, 0, TAU, 64, Color.RED, 2.0, true)
+	
+	# Fallback: if sprite isn't working, draw a red dot in the middle
+	if _sprite == null or _sprite.texture == null:
+		draw_circle(Vector2.ZERO, radius, Color.RED)
 
 
 func take_damage(amount: float) -> void:
@@ -158,7 +175,14 @@ func _check_contact_damage() -> void:
 		if enemy == null or not enemy.has_method("get_bounds_rect"):
 			continue
 		var rect: Rect2 = enemy.get_bounds_rect()
-		if rect.has_point(global_position):
+		
+		# Better hitbox check: check if circle (player) overlaps rect (enemy)
+		var closest_point = Vector2(
+			clamp(global_position.x, rect.position.x, rect.position.x + rect.size.x),
+			clamp(global_position.y, rect.position.y, rect.position.y + rect.size.y)
+		)
+		
+		if global_position.distance_to(closest_point) < radius:
 			take_damage(contact_damage)
 			_invincibility_timer = invincibility_duration
 			_apply_contact_knockback(rect)
@@ -183,3 +207,42 @@ func _find_projectile_parent() -> Node:
 	if parent != null:
 		return parent
 	return get_tree().current_scene
+
+
+func _setup_player_sprite() -> void:
+	_sprite = Sprite2D.new()
+	_sprite.name = "PlayerSprite"
+	add_child(_sprite)
+	_sprite.centered = true
+	_sprite.show_behind_parent = true
+	
+	var mat = ShaderMaterial.new()
+	mat.shader = load("res://scripts/circle_mask.gdshader")
+	_sprite.material = mat
+	
+	var global_path = ProjectSettings.globalize_path("res://assets/player.webp")
+	var img = Image.load_from_file(global_path)
+	if img:
+		_sprite.texture = ImageTexture.create_from_image(img)
+	else:
+		_sprite.texture = null
+	
+	if _sprite.texture:
+		var tex_size = _sprite.texture.get_size()
+		var min_dim = min(tex_size.x, tex_size.y)
+		_sprite.region_enabled = true
+		# Square crop from center
+		var offset_x = (tex_size.x - min_dim) / 2.0
+		var offset_y = (tex_size.y - min_dim) / 2.0
+		_sprite.region_rect = Rect2(offset_x, offset_y, min_dim, min_dim)
+		# Scale to fill the radius (disk)
+		# We make it noticeably smaller than radius to ensure it stays well under the thick outline
+		var target_size = (radius - 4.0) * 2.0
+		var scale_factor = target_size / min_dim
+		_sprite.scale = Vector2(scale_factor, scale_factor)
+	else:
+		# Fallback if texture fails to load
+		_sprite.queue_free()
+		_sprite = null
+		# Redraw the white dot in _draw if sprite fails
+		queue_redraw()
