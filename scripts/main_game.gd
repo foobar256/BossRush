@@ -92,10 +92,9 @@ func _setup_arena_elements() -> void:
 	# Add boss to scene
 	add_child(boss)
 
-	# Set player position below boss
+	# Set player position from arena manager
 	if _player != null:
-		# Position player 150 units below boss
-		_player.global_position = boss.global_position + Vector2(0, 150)
+		_player.global_position = _arena_manager.get_player_spawn()
 
 	# Start countdown
 	if _countdown_ui != null:

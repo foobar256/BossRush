@@ -33,10 +33,9 @@ var _is_dead: bool = false
 var _is_combat_active: bool = false
 var _arena_manager: Node2D = null
 
-@onready var _projectile_parent: Node = _find_projectile_parent()
-
-
 var _sprite: Sprite2D
+
+@onready var _projectile_parent: Node = _find_projectile_parent()
 
 
 func _ready() -> void:
@@ -85,7 +84,7 @@ func start_combat() -> void:
 func _process(delta: float) -> void:
 	if _is_dead:
 		return
-	
+
 	if _invincibility_timer > 0.0:
 		_invincibility_timer = max(_invincibility_timer - delta, 0.0)
 		# Blinking effect
@@ -129,7 +128,7 @@ func _draw() -> void:
 	if show_debug_hitbox:
 		# Draw hitbox in red on top
 		draw_arc(Vector2.ZERO, radius, 0, TAU, 64, Color.RED, 2.0, true)
-	
+
 	# Fallback: if sprite isn't working, draw a red dot in the middle
 	if _sprite == null or _sprite.texture == null:
 		draw_circle(Vector2.ZERO, radius, Color.RED)
@@ -183,13 +182,13 @@ func _check_contact_damage() -> void:
 		if enemy == null or not enemy.has_method("get_bounds_rect"):
 			continue
 		var rect: Rect2 = enemy.get_bounds_rect()
-		
+
 		# Better hitbox check: check if circle (player) overlaps rect (enemy)
 		var closest_point = Vector2(
 			clamp(global_position.x, rect.position.x, rect.position.x + rect.size.x),
 			clamp(global_position.y, rect.position.y, rect.position.y + rect.size.y)
 		)
-		
+
 		if global_position.distance_to(closest_point) < radius:
 			take_damage(contact_damage)
 			_apply_contact_knockback(rect)
@@ -222,17 +221,17 @@ func _setup_player_sprite() -> void:
 	add_child(_sprite)
 	_sprite.centered = true
 	_sprite.show_behind_parent = true
-	
+
 	var global_path = ProjectSettings.globalize_path("res://assets/player.webp")
 	var img = Image.load_from_file(global_path)
 	if img:
 		_sprite.texture = ImageTexture.create_from_image(img)
 	else:
 		_sprite.texture = null
-	
+
 	if _sprite.texture:
 		var tex_size = _sprite.texture.get_size()
-		# The baked sprite includes the border. 
+		# The baked sprite includes the border.
 		# Original radius 48, thickness 6 -> outer radius 51, total diameter 102.
 		var target_size = (radius + outline_thickness / 2.0) * 2.0
 		var scale_factor = target_size / tex_size.x

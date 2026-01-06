@@ -15,11 +15,13 @@ func _run_all_tests():
 		preload("res://tests/test_main_game_cursor.gd").new(),
 		preload("res://tests/test_debug_menu_config.gd").new(),
 		preload("res://tests/test_debug_menu_toggle.gd").new(),
+		preload("res://tests/test_spawn_markers.gd").new(),
 	]
 
 	var success = true
 	for test_script in test_scripts:
-		success = test_script.run_tests() and success
+		var result = await test_script.run_tests()
+		success = result and success
 	
 	if success:
 		print("\n🎉 All tests passed! Game over and cursor behavior look good.")
