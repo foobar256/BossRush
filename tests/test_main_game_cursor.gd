@@ -35,7 +35,7 @@ func test_game_over_cursor_state():
 	tree.root.add_child(instance)
 
 	var crosshair = instance.get_node_or_null("Crosshair")
-	var game_over_window = instance.get_node_or_null("GameOverWindow")
+	var game_over_window = instance.get_node_or_null("GameOverLayer/GameOverWindow")
 
 	if crosshair == null or game_over_window == null:
 		test_results.append("FAIL: Missing Crosshair or GameOverWindow in main_game.tscn")

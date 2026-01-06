@@ -50,7 +50,10 @@ script = ExtResource("5_4w8mm")
 script = ExtResource("13_5g9p4")
 pause_menu_packed = ExtResource("12_7j2m1")
 
-[node name="GameOverWindow" parent="." instance=ExtResource("14_xyz34")]
+[node name="GameOverLayer" type="CanvasLayer" parent="."]
+layer = 20
+
+[node name="GameOverWindow" parent="GameOverLayer" instance=ExtResource("14_xyz34")]
 visible = false
 
 [node name="CountdownUI" parent="." instance=ExtResource("16_countdown")]

@@ -85,8 +85,18 @@ func start_combat() -> void:
 func _process(delta: float) -> void:
 	if _is_dead:
 		return
+	
 	if _invincibility_timer > 0.0:
 		_invincibility_timer = max(_invincibility_timer - delta, 0.0)
+		# Blinking effect
+		var blink_speed = 12.0
+		var is_visible = int(_invincibility_timer * blink_speed * 2.0) % 2 == 0
+		modulate.a = 1.0 if is_visible else 0.4
+		if _invincibility_timer <= 0.0:
+			modulate.a = 1.0
+	elif modulate.a != 1.0:
+		modulate.a = 1.0
+
 	if _knockback_timer > 0.0:
 		position += _knockback_velocity * delta
 		_knockback_timer = max(_knockback_timer - delta, 0.0)
@@ -116,9 +126,6 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
-	# Center the arc on the radius so it overlaps the image edge by half the thickness
-	draw_arc(Vector2.ZERO, radius, 0, TAU, 128, outline_color, outline_thickness, true)
-	
 	if show_debug_hitbox:
 		# Draw hitbox in red on top
 		draw_arc(Vector2.ZERO, radius, 0, TAU, 64, Color.RED, 2.0, true)
@@ -129,9 +136,10 @@ func _draw() -> void:
 
 
 func take_damage(amount: float) -> void:
-	if amount <= 0.0 or _is_dead:
+	if amount <= 0.0 or _is_dead or _invincibility_timer > 0.0:
 		return
 	current_health = max(current_health - amount, 0.0)
+	_invincibility_timer = invincibility_duration
 	_sync_health_bar()
 	if current_health <= 0.0:
 		_die()
@@ -184,7 +192,6 @@ func _check_contact_damage() -> void:
 		
 		if global_position.distance_to(closest_point) < radius:
 			take_damage(contact_damage)
-			_invincibility_timer = invincibility_duration
 			_apply_contact_knockback(rect)
 			return
 
@@ -216,10 +223,6 @@ func _setup_player_sprite() -> void:
 	_sprite.centered = true
 	_sprite.show_behind_parent = true
 	
-	var mat = ShaderMaterial.new()
-	mat.shader = load("res://scripts/circle_mask.gdshader")
-	_sprite.material = mat
-	
 	var global_path = ProjectSettings.globalize_path("res://assets/player.webp")
 	var img = Image.load_from_file(global_path)
 	if img:
@@ -229,16 +232,10 @@ func _setup_player_sprite() -> void:
 	
 	if _sprite.texture:
 		var tex_size = _sprite.texture.get_size()
-		var min_dim = min(tex_size.x, tex_size.y)
-		_sprite.region_enabled = true
-		# Square crop from center
-		var offset_x = (tex_size.x - min_dim) / 2.0
-		var offset_y = (tex_size.y - min_dim) / 2.0
-		_sprite.region_rect = Rect2(offset_x, offset_y, min_dim, min_dim)
-		# Scale to fill the radius (disk)
-		# We make it noticeably smaller than radius to ensure it stays well under the thick outline
-		var target_size = (radius - 4.0) * 2.0
-		var scale_factor = target_size / min_dim
+		# The baked sprite includes the border. 
+		# Original radius 48, thickness 6 -> outer radius 51, total diameter 102.
+		var target_size = (radius + outline_thickness / 2.0) * 2.0
+		var scale_factor = target_size / tex_size.x
 		_sprite.scale = Vector2(scale_factor, scale_factor)
 	else:
 		# Fallback if texture fails to load

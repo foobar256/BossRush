@@ -247,7 +247,7 @@ func test_main_game_integration():
 	var instance = main_game_scene.instantiate()
 	
 	# Check that GameOverWindow exists in scene using get_node_or_null
-	var game_over_window = instance.get_node_or_null("GameOverWindow")
+	var game_over_window = instance.get_node_or_null("GameOverLayer/GameOverWindow")
 	
 	if game_over_window == null:
 		test_results.append("FAIL: GameOverWindow not found in main_game.tscn")

@@ -10,7 +10,7 @@ var _game_over_window: Control
 
 func _ready() -> void:
 	# Get game over window dynamically
-	_game_over_window = get_node_or_null("GameOverWindow")
+	_game_over_window = get_node_or_null("GameOverLayer/GameOverWindow")
 
 	# Create the arena first
 	if _arena_manager != null:
