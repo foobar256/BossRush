@@ -8,10 +8,8 @@ signal died
 @export var outline_color: Color = Color.BLACK
 @export var outline_thickness: float = 6.0
 @export var show_debug_hitbox: bool = false
-@export var projectile_scene: PackedScene
-@export var projectile_speed: float = 650.0
-@export var projectile_damage: float = 10.0
-@export var fire_cooldown: float = 0.12
+@export var fire_cooldown: float = 0.12  # Fallback
+@export var current_weapon: WeaponData = preload("res://resources/weapons/pistol.tres")
 @export var max_health: float = 100.0
 @export var current_health: float = 100.0
 @export var contact_damage: float = 10.0
@@ -120,8 +118,12 @@ func _process(delta: float) -> void:
 	position.y = clamp(position.y, min_pos.y, max_pos.y)
 	_check_contact_damage()
 	_fire_timer = max(_fire_timer - delta, 0.0)
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		_try_fire()
+	if current_weapon and current_weapon.is_auto:
+		if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+			_try_fire()
+	else:
+		if Input.is_action_just_pressed("fire"):  # Assuming "fire" action exists or we use mouse left
+			_try_fire()
 
 
 func _draw() -> void:
@@ -156,23 +158,44 @@ func _die() -> void:
 
 
 func _try_fire() -> void:
-	if _fire_timer > 0.0 or projectile_scene == null:
+	var ProjectileScene = preload("res://scenes/game_scene/projectile.tscn")
+	if _fire_timer > 0.0 or ProjectileScene == null or current_weapon == null:
 		return
-	var direction := get_global_mouse_position() - global_position
+
+	var mouse_pos = get_global_mouse_position()
+	var direction := mouse_pos - global_position
 	if direction.length_squared() <= 0.0001:
 		direction = Vector2.RIGHT
 	else:
 		direction = direction.normalized()
-	var projectile := projectile_scene.instantiate()
-	if projectile == null:
-		return
+
 	var spawn_offset := radius + 8.0
-	_projectile_parent.add_child(projectile)
-	projectile.global_position = global_position + direction * spawn_offset
-	if projectile.has_method("setup"):
-		projectile.setup(direction, bounds, projectile_damage)
-	projectile.speed = projectile_speed
-	_fire_timer = fire_cooldown
+	var base_rotation = direction.angle()
+	var spread_rad = deg_to_rad(current_weapon.spread_degrees)
+
+	for i in range(current_weapon.projectiles_per_shot):
+		var shot_direction = direction
+		if current_weapon.projectiles_per_shot > 1:
+			var offset = (randf() - 0.5) * spread_rad
+			shot_direction = Vector2.from_angle(base_rotation + offset)
+
+		var projectile := ProjectileScene.instantiate()
+		if projectile == null:
+			continue
+
+		_projectile_parent.add_child(projectile)
+		projectile.global_position = global_position + direction * spawn_offset
+		if projectile.has_method("setup"):
+			projectile.setup(shot_direction, bounds, current_weapon.damage)
+		projectile.speed = current_weapon.projectile_speed
+
+	_fire_timer = current_weapon.fire_cooldown
+
+
+func set_weapon(weapon: WeaponData) -> void:
+	current_weapon = weapon
+	# Reset fire timer if the new weapon has a significantly different cooldown
+	_fire_timer = min(_fire_timer, current_weapon.fire_cooldown)
 
 
 func _check_contact_damage() -> void:

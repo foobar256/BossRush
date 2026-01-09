@@ -91,6 +91,8 @@ func _setup_arena_elements() -> void:
 
 	# Add boss to scene
 	add_child(boss)
+	if boss.has_signal("died"):
+		boss.died.connect(_on_boss_died)
 
 	# Set player position from arena manager
 	if _player != null:
@@ -129,6 +131,36 @@ func _on_main_menu_pressed() -> void:
 	get_tree().paused = false
 	_set_game_cursor_enabled(false)
 	get_tree().change_scene_to_file("res://scenes/menus/main_menu/main_menu.tscn")
+
+
+func _on_boss_died() -> void:
+	# Small delay to let the boss explosion/death finish if any
+	await get_tree().create_timer(1.0).timeout
+
+	_show_weapon_select()
+
+
+func _show_weapon_select() -> void:
+	var weapon_select_scene = load("res://scenes/windows/weapon_select_window.tscn")
+	if weapon_select_scene == null:
+		return
+
+	var window = weapon_select_scene.instantiate()
+	add_child(window)
+
+	if window.has_signal("weapon_selected"):
+		window.weapon_selected.connect(_on_weapon_selected)
+
+	_set_game_cursor_enabled(false)
+	get_tree().paused = true
+
+
+func _on_weapon_selected(weapon: WeaponData) -> void:
+	if _player != null and _player.has_method("set_weapon"):
+		_player.set_weapon(weapon)
+
+	get_tree().paused = false
+	_set_game_cursor_enabled(true)
 
 
 func _set_game_cursor_enabled(enabled: bool) -> void:

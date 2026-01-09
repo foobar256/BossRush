@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/weapon_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+weapon_name = "Shotgun"
+damage = 8.0
+fire_cooldown = 0.6
+projectile_speed = 500.0
+spread_degrees = 25.0
+projectiles_per_shot = 5
+is_auto = true
