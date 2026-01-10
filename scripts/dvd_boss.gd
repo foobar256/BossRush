@@ -25,7 +25,7 @@ signal died
 @export var split_scale: float = 0.5
 @export var split_offset: float = 28.0
 @export var box_color: Color = Color(0.18, 0.18, 0.22, 1)
-@export var text: String = "DVD"
+@export var text: String = "Blueray"
 @export var text_color: Color = Color(0.9, 0.86, 0.8, 1)
 @export var label_vertical_bias: float = -0.05
 @export var font: Font = preload("res://assets/fonts/SourGummy/SourGummy-Bold.ttf")
@@ -281,7 +281,12 @@ func _split() -> void:
 			child.start_combat()
 		child.bounds_node = bounds_node
 
-		child.text = text
+		if text == "Blueray":
+			child.text = "Dvds"
+		elif text == "Dvds":
+			child.text = "CDs"
+		else:
+			child.text = text
 		child.text_color = text_color
 		child.box_color = box_color
 		child.font = font
